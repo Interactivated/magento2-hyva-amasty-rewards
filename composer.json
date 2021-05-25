@@ -1,0 +1,23 @@
+{
+  "name": "hyva-themes/magento2-amasty-rewards",
+  "description": "Hyvä Themes Compatibility module for Amasty_Rewards",
+  "type": "magento2-module",
+  "require": {
+    "magento/framework": "*",
+    "hyva-themes/magento2-compat-module-fallback": "*",
+    "amasty/rewards": "*"
+  },
+  "authors": [{
+      "name": "Hyvä Themes B.V.",
+      "email": "info@hyva.io"
+  }],
+  "license": "see LICENSE.md",
+  "autoload": {
+    "files": [
+      "src/registration.php"
+    ],
+    "psr-4": {
+      "Hyva\\AmastyRewards\\": "src/"
+    }
+  }
+}
