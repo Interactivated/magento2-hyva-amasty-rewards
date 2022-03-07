@@ -1,0 +1,41 @@
+<?php
+
+use Hyva\AmastyRewards\ViewModel\Catalog\Highlight;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+
+/** @var ViewModelRegistry $viewModels */
+
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+/** @var Highlight $viewModel */
+$viewModel = $viewModels->require(Highlight::class);
+
+$uniqueSciptId = uniqid();
+?>
+
+<script>
+    function initGuestHighlight_<?= $uniqueSciptId ?>() {
+        return {
+            frontend_class: '',
+            highlight: <?= /** @noEscape */ json_encode($viewModel->getJsConfig()) ?> || { visible: false }
+        }
+    }
+</script>
+
+<div x-data="initGuestHighlight_<?= $uniqueSciptId ?>()"
+     class="amasty-rewards-highlight-catalog">
+
+    <div x-show="highlight.visible" class="amrewards-highlight-container flex">
+        <?= $heroicons->currencyDollarHtml("w-5", 25, 25) ?>
+        <div class="caption ml-1">
+            <strong>
+                <?= __('You can earn') ?>
+                <b x-text="highlight.caption_text" :style="`color: ${highlight.caption_color};`"></b>
+                <?= __('for registration!') ?>
+            </strong>
+        </div>
+    </div>
+
+</div>
