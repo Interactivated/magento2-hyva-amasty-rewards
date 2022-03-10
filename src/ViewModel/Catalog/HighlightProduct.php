@@ -10,7 +10,6 @@ use Magento\Framework\View\Element\Block\ArgumentInterface;
 
 class HighlightProduct extends AmastyHighlightProduct implements ArgumentInterface
 {
-
     /**
      * @var GuestHighlightManagementInterface
      */
