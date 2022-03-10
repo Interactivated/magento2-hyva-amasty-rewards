@@ -1,16 +1,17 @@
 <?php
 
-use Hyva\AmastyRewards\ViewModel\Catalog\Highlight;
+use Hyva\AmastyRewards\ViewModel\Catalog\HighlightProduct;
 use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Framework\Escaper;
 
 /** @var ViewModelRegistry $viewModels */
-
+/** @var Escaper $escaper */
 
 /** @var HeroiconsOutline $heroicons */
 $heroicons = $viewModels->require(HeroiconsOutline::class);
 
 /** @var Highlight $viewModel */
-$viewModel = $viewModels->require(Highlight::class);
+$viewModel = $viewModels->require(HighlightProduct::class);
 
 $uniqueSciptId = uniqid();
 ?>
@@ -31,9 +32,9 @@ $uniqueSciptId = uniqid();
         <?= $heroicons->currencyDollarHtml("w-5", 25, 25) ?>
         <div class="caption ml-1">
             <strong>
-                <?= __('You can earn') ?>
+                <?= $escaper->escapeHtml(__('You can earn')) ?>
                 <b x-text="highlight.caption_text" :style="`color: ${highlight.caption_color};`"></b>
-                <?= __('for registration!') ?>
+                <?= $escaper->escapeHtml(__('for registration!')) ?>
             </strong>
         </div>
     </div>
