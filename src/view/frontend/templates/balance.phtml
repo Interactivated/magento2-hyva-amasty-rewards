@@ -1,0 +1,31 @@
+<?php
+// @codingStandardsIgnoreFile
+/** @var Amasty\Rewards\Block\Frontend\Balance $block */
+
+$uniqueScriptId = uniqid();
+?>
+
+<script>
+    function initBalance_<?= $uniqueScriptId ?>() {
+        return {
+            visible: false,
+            captionText: "<?= $block->getBalanceLabel() ?>",
+            balance: "<?= $block->getCustomerBalance() ?>",
+            getData(data) {
+                if (data.rewards) {
+                    this.balance = data.rewards.balance
+                }
+                this.visible = true;
+            }
+        }
+    }
+</script>
+
+<li x-data="initBalance_<?= $uniqueScriptId ?>()"
+    @private-content-loaded.window="getData(event.detail.data)"
+    class="amrewards-balance-container">
+    <a x-show="visible" href="<?= $block->getUrl('amrewards') ?>">
+        <span class="amrewards-label" x-text="captionText"></span>
+        <div class="amrewards-amount" x-text="balance"></div>
+    </a>
+</li>

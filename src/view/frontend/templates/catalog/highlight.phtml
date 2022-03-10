@@ -13,19 +13,18 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
 /** @var Highlight $viewModel */
 $viewModel = $viewModels->require(HighlightProduct::class);
 
-$uniqueSciptId = uniqid();
+$uniqueScriptId = uniqid();
 ?>
 
 <script>
-    function initGuestHighlight_<?= $uniqueSciptId ?>() {
+    function initGuestHighlight_<?= $uniqueScriptId ?>() {
         return {
-            frontend_class: '',
             highlight: <?= /** @noEscape */ json_encode($viewModel->getJsConfig()) ?> || { visible: false }
         }
     }
 </script>
 
-<div x-data="initGuestHighlight_<?= $uniqueSciptId ?>()"
+<div x-data="initGuestHighlight_<?= $uniqueScriptId ?>()"
      class="amasty-rewards-highlight-catalog">
 
     <div x-show="highlight.visible" class="amrewards-highlight-container flex">
