@@ -21,11 +21,12 @@ $uniqueScriptId = uniqid();
     }
 </script>
 
-<li x-data="initBalance_<?= $uniqueScriptId ?>()"
+<a  x-data="initBalance_<?= $uniqueScriptId ?>()"
     @private-content-loaded.window="getData(event.detail.data)"
-    class="amrewards-balance-container">
-    <a x-show="visible" href="<?= $block->getUrl('amrewards') ?>">
-        <span class="amrewards-label" x-text="captionText"></span>
-        <div class="amrewards-amount" x-text="balance"></div>
-    </a>
-</li>
+    href="<?= $block->getUrl('amrewards') ?>"
+    class="flex px-4 py-2 lg:px-5 lg:py-2 hover:bg-gray-100"
+    x-show="visible">
+    <span class="amrewards-label" x-text="captionText"></span>
+    <div class="amrewards-amount ml-1 pl-1.5 pr-1.5 bg-yellow-500 font-bold rounded-lg" x-text="balance"></div>
+</a>
+
