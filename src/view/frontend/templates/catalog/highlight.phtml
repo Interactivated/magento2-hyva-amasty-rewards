@@ -1,5 +1,4 @@
 <?php
-
 use Hyva\AmastyRewards\ViewModel\Catalog\HighlightProduct;
 use Hyva\Theme\ViewModel\HeroiconsOutline;
 use Magento\Framework\Escaper;
@@ -10,21 +9,21 @@ use Magento\Framework\Escaper;
 /** @var HeroiconsOutline $heroicons */
 $heroicons = $viewModels->require(HeroiconsOutline::class);
 
-/** @var Highlight $viewModel */
+/** @var HighlightProduct $viewModel */
 $viewModel = $viewModels->require(HighlightProduct::class);
 
 $uniqueScriptId = uniqid();
 ?>
 
 <script>
-    function initGuestHighlight_<?= $uniqueScriptId ?>() {
+    function initGuestHighlight_<?= /** @noEscape */ $uniqueScriptId ?>() {
         return {
             highlight: <?= /** @noEscape */ json_encode($viewModel->getJsConfig()) ?> || { visible: false }
         }
     }
 </script>
 
-<div x-data="initGuestHighlight_<?= $uniqueScriptId ?>()"
+<div x-data="initGuestHighlight_<?= /** @noEscape */ $uniqueScriptId ?>()"
      class="amasty-rewards-highlight-catalog">
 
     <div x-show="highlight.visible" class="amrewards-highlight-container flex">

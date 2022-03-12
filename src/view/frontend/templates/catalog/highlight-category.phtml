@@ -1,0 +1,40 @@
+<?php
+use Hyva\AmastyRewards\ViewModel\Catalog\HighlightCategory;
+use Magento\Framework\Escaper;
+
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+
+/** @var HighlightCategory $viewModel */
+$viewModel = $viewModels->require(HighlightCategory::class);
+
+$uniqueScriptId = uniqid();
+?>
+
+<script>
+    function initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>() {
+        return {
+            highlight: <?= /** @noEscape */ $viewModel->getJsConfig() ?> || { visible: false }
+        }
+    }
+</script>
+
+<div x-data="initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>()"
+     class="amasty-rewards-highlight-catalog">
+
+    123
+
+    <div class="amasty-rewards-loader" data-bind="visible: loader()" style="display: none;">
+        <img src="<?= $escaper->escapeUrl($viewModel->getViewFileUrl('Amasty_Rewards::images/ajax-loader.gif')) ?>" />
+    </div>
+
+    <div x-show="highlight.visible" class="amrewards-highlight-container">
+        <div class="caption">
+            <strong>
+                <?= $escaper->escapeHtml(__('Earn')) ?>
+                <b x-text="highlight.caption_text" :style="`color: ${highlight.caption_color};`"></b>
+            </strong>
+        </div>
+    </div>
+
+</div>

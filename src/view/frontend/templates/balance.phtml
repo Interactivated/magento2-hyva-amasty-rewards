@@ -1,16 +1,18 @@
 <?php
-// @codingStandardsIgnoreFile
+use Magento\Framework\Escaper;
+
 /** @var Amasty\Rewards\Block\Frontend\Balance $block */
+/** @var Escaper $escaper */
 
 $uniqueScriptId = uniqid();
 ?>
 
 <script>
-    function initBalance_<?= $uniqueScriptId ?>() {
+    function initBalance_<?= /** @noEscape */ $uniqueScriptId ?>() {
         return {
             visible: false,
-            captionText: "<?= $block->getBalanceLabel() ?>",
-            balance: "<?= $block->getCustomerBalance() ?>",
+            captionText: "<?= $escaper->escapeJs($block->getBalanceLabel()) ?>",
+            balance: "<?= $escaper->escapeJs($block->getCustomerBalance()) ?>",
             getData(data) {
                 if (data.rewards) {
                     this.balance = data.rewards.balance
@@ -21,9 +23,9 @@ $uniqueScriptId = uniqid();
     }
 </script>
 
-<a  x-data="initBalance_<?= $uniqueScriptId ?>()"
-    @private-content-loaded.window="getData(event.detail.data)"
-    href="<?= $block->getUrl('amrewards') ?>"
+<a x-data="initBalance_<?= /** @noEscape */ $uniqueScriptId ?>()"
+    @private-content-loaded.window="getData($event.detail.data)"
+    href="<?= $escaper->escapeUrl($block->getUrl('amrewards')) ?>"
     class="flex px-4 py-2 lg:px-5 lg:py-2 hover:bg-gray-100"
     x-show="visible">
     <span class="amrewards-label" x-text="captionText"></span>

@@ -32,12 +32,11 @@ class HighlightProduct extends AmastyHighlightProduct implements ArgumentInterfa
            return [
                 'productId' => $this->getProductId(),
                 'refreshUrl' => $this->getRefreshUrl()
-            ];
+           ];
         } elseif ($this->guestHighlightManagement->isVisible(GuestHighlightManagementInterface::PAGE_PRODUCT)) {
             return $this->guestHighlightManagement
                     ->getHighlight(GuestHighlightManagementInterface::PAGE_PRODUCT)
                     ->getData();
         }
     }
-
 }

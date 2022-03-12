@@ -20,7 +20,7 @@ Hyvä Themes Compatibility module for Amasty_Rewards
 
 ```
         <referenceBlock name="header.customer">
-            <block class="Amasty\Rewards\Block\Frontend\Balance" name="rewards.balance" template="Hyva_AmastyRewards::balance.phtml"/>
+            <block class="Amasty\Rewards\Block\Frontend\Balance" name="rewards.logged.balance" template="Hyva_AmastyRewards::balance.phtml"/>
         </referenceBlock>
 ```
 
@@ -36,7 +36,7 @@ Hyvä Themes Compatibility module for Amasty_Rewards
 ...
 
 <!-- Display Rewards balance -->
-<?= $block->getChildHtml('rewards.balance') ?>
+<?= $block->getChildHtml('rewards.logged.balance') ?>
 
 ```
 
