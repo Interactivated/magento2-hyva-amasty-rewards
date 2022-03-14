@@ -12,6 +12,6 @@
         </arguments>
     </type>
     <type name="Hyva\Theme\ViewModel\ProductListItem">
-        <plugin disabled="false" sortOrder="0" name="Amasty_Rewards_List_Product" type="Hyva\AmastyRewards\Plugin\Block\Product\ListItemPlugin"/>
+        <plugin disabled="false" sortOrder="10" name="Amasty_Rewards_List_Product" type="Hyva\AmastyRewards\Plugin\Block\Product\ListItemPlugin"/>
     </type>
 </config>

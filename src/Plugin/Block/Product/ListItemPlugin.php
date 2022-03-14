@@ -29,11 +29,7 @@ class ListItemPlugin
 
     public function afterGetProductPriceHtml(ProductListItem $subject, $result)
     {
-        /** @var \Amasty\Rewards\Block\Frontend\Catalog\HighlightCategory $block */
-        // $block = $subject->getChildBlock('amasty_rewards_highlight');
-
-        $block = $this->layout->getBlock('amasty.rewards.highlight.category');
-
+        $block = $this->layout->getBlock('amasty.rewards.highlight.category')->setProduct($this->product);
 
         if (!$block) {
             return $result;

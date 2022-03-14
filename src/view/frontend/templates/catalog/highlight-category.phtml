@@ -22,7 +22,7 @@ $uniqueScriptId = uniqid();
 <div x-data="initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>()"
      class="amasty-rewards-highlight-catalog">
 
-    123
+    template!
 
     <div class="amasty-rewards-loader" data-bind="visible: loader()" style="display: none;">
         <img src="<?= $escaper->escapeUrl($viewModel->getViewFileUrl('Amasty_Rewards::images/ajax-loader.gif')) ?>" />
