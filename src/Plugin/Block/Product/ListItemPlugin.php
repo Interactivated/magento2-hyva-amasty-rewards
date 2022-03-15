@@ -2,15 +2,23 @@
 
 namespace Hyva\AmastyRewards\Plugin\Block\Product;
 use Hyva\Theme\ViewModel\ProductListItem;
+use Magento\Catalog\Model\Category;
+use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Layer\Resolver as LayerResolver;
+use Magento\Customer\Model\Context as CustomerContext;
 
 class ListItemPlugin
 {
+
     /**
      * @var \Magento\Catalog\Model\Product
      */
     private $product = null;
 
-    protected $layout;
+    /**
+     * @var \Magento\Framework\View\LayoutInterface
+     */
+    private $layout;
 
     public function __construct(
         \Magento\Framework\View\LayoutInterface $layout
@@ -29,13 +37,14 @@ class ListItemPlugin
 
     public function afterGetProductPriceHtml(ProductListItem $subject, $result)
     {
-        $block = $this->layout->getBlock('amasty.rewards.highlight.category')->setProduct($this->product);
+        $block = $this->layout->getBlock('amasty.rewards.highlight.category');
 
         if (!$block) {
             return $result;
         }
 
         // $block->setProductId($this->product->getId())->setProductSku($this->product->getSku());
+
         $result .= $block->toHtml();
 
         return $result;
