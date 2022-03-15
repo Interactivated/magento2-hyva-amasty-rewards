@@ -13,6 +13,12 @@ Hyvä Themes Compatibility module for Amasty_Rewards
     ```
     bin/magento setup:upgrade
     ```
+   
+## Workaround for fix the FPC issue on category pages for auth customer:
+
+1. Copy the `vendor/hyva-themes/magento2-default-theme/Magento_Catalog/templates/product/list.phtml` to you own theme
+2. Change line `->setData('cache_lifetime', 3600)` to `->setData('cache_lifetime', 0)`.
+
 
 ## Add link to view Reward Points to customer account
 
