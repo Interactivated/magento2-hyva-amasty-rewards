@@ -43,7 +43,7 @@ class ListItemPlugin
             return $result;
         }
 
-        // $block->setProductId($this->product->getId())->setProductSku($this->product->getSku());
+        $block->setProduct($this->product);
 
         $result .= $block->toHtml();
 

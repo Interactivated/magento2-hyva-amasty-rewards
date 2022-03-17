@@ -8,13 +8,17 @@ use Magento\Framework\Escaper;
 /** @var HighlightCategory $viewModel */
 $viewModel = $viewModels->require(HighlightCategory::class);
 
+/** @var Magento\Catalog\Model\Product $product */
+/** @var Amasty\Rewards\Block\Frontend\Catalog\HighlightCategory $block */
+$product = $block->getProduct();
+
 $uniqueScriptId = uniqid();
 ?>
 
 <script>
     function initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>() {
         return {
-            highlight: <?= /** @noEscape */ $viewModel->getJsConfig() ?> || { visible: false }
+            highlight: <?= /** @noEscape */ $viewModel->getJsConfig($product) ?> || { visible: false }
         }
     }
 </script>
