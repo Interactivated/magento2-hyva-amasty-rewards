@@ -10,6 +10,7 @@ use Magento\Framework\Url\Helper\Data;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Framework\View\Element\Template;
 use Magento\Customer\Model\SessionFactory as CustomerSessionFactory;
+use Magento\Customer\Model\Session as CustomerSession;
 use Amasty\Rewards\Api\GuestHighlightManagementInterface;
 use Amasty\Rewards\Model\Config;
 
@@ -25,6 +26,10 @@ class HighlightCategory extends AmastyHighlightCategory implements ArgumentInter
      */
     protected $abstractProduct;
 
+
+    protected $customerSession;
+
+
     public function __construct(
         Template\Context $context,
         CustomerSessionFactory $sessionFactory,
@@ -32,11 +37,19 @@ class HighlightCategory extends AmastyHighlightCategory implements ArgumentInter
         Config $config,
         Data $urlHelper,
         AbstractProduct $abstractProduct,
+        CustomerSession $customerSession,
         array $data = []
     ) {
         parent::__construct($context, $sessionFactory, $guestHighlightManagement, $config, $data);
+
         $this->urlHelper = $urlHelper;
         $this->abstractProduct = $abstractProduct;
+        $this->customerSession = $customerSession;
+    }
+
+    public function getCustomerId()
+    {
+        return $this->customerSession->getId();
     }
 
     public function getJsConfig(Product $product)

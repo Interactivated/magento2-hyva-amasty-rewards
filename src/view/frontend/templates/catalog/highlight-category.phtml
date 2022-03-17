@@ -31,12 +31,19 @@ $uniqueScriptId = uniqid();
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    "body": JSON.stringify({ productId: this.config.productId, attributes }),
-                    "method": "POST",
-                    "mode": "cors"
-                }).then(function (response) {
-                    // debugger;
-                });
+                    "body": JSON.stringify({
+                        "customer_id":  <?= $viewModel->getCustomerId() ?>,
+                        "productId": this.config.productId,
+                        attributes
+                    }),
+                    "method": "POST"
+                }).then(function (data) {
+                    return data.json();
+                }).then(response => {
+                    console.log(response);
+
+                    // throw new Error(response['error_message']);
+                })
             }
         }
     }
