@@ -14,29 +14,50 @@ $product = $block->getProduct();
 
 $uniqueScriptId = uniqid();
 ?>
-
 <script>
     function initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>() {
         return {
-            highlight: <?= /** @noEscape */ $viewModel->getJsConfig($product) ?> || { visible: false }
+            config: <?= /** @noEscape */ $viewModel->getJsConfig($product) ?>,
+            visible: false,
+            captionText: '',
+            captionColor: '',
+            updateData(rootEl) {
+                const refreshUrl = this.config.refreshUrl;
+                const formKey = rootEl.querySelector('input[name="form_key"]').value;
+                const attributes = `form_key=${formKey}&product=${this.config.data.product}&uenc=${this.config.data.uenc}`;
+
+                fetch(refreshUrl, {
+                    "headers": {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    "body": JSON.stringify({ productId: this.config.productId, attributes }),
+                    "method": "POST",
+                    "mode": "cors"
+                }).then(function (response) {
+                    // debugger;
+                });
+            }
         }
     }
 </script>
 
+
 <div x-data="initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>()"
+     x-init="updateData($el);"
      class="amasty-rewards-highlight-catalog">
 
-    template!
+    <?= $block->getBlockHtml('formkey') ?>
 
     <div class="amasty-rewards-loader" data-bind="visible: loader()" style="display: none;">
         <img src="<?= $escaper->escapeUrl($viewModel->getViewFileUrl('Amasty_Rewards::images/ajax-loader.gif')) ?>" />
     </div>
 
-    <div x-show="highlight.visible" class="amrewards-highlight-container">
+    <div x-show="visible" class="amrewards-highlight-container">
         <div class="caption">
             <strong>
                 <?= $escaper->escapeHtml(__('Earn')) ?>
-                <b x-text="highlight.caption_text" :style="`color: ${highlight.caption_color};`"></b>
+                <b x-text="captionText" :style="`color: ${captionColor};`"></b>
             </strong>
         </div>
     </div>

@@ -43,8 +43,8 @@ class HighlightCategory extends AmastyHighlightCategory implements ArgumentInter
     {
         $url = $this->abstractProduct->getAddToCartUrl($product, ['_escape' => false]);
         return json_encode([
-            'productId' => $product->getId(),
             'refreshUrl' => $this->getRefreshUrl(),
+            'productId' => $product->getId(),
             'data' => [
                 'product' => (int) $product->getEntityId(),
                 ActionInterface::PARAM_NAME_URL_ENCODED => $this->urlHelper->getEncodedUrl($url),
