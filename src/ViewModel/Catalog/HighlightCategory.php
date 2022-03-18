@@ -19,16 +19,17 @@ class HighlightCategory extends AmastyHighlightCategory implements ArgumentInter
     /**
      * @var Data
      */
-    protected $urlHelper;
+    private $urlHelper;
 
     /**
      * @var AbstractProduct
      */
-    protected $abstractProduct;
+    private $abstractProduct;
 
-
-    protected $customerSession;
-
+    /**
+     * @var CustomerSession
+     */
+    private $customerSession;
 
     public function __construct(
         Template\Context $context,

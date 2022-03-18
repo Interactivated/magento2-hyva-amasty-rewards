@@ -16,7 +16,7 @@ $uniqueScriptId = uniqid();
 ?>
 
 <script>
-    function initGuestHighlight_<?= /** @noEscape */ $uniqueScriptId ?>() {
+    function initProductHighlight_<?= /** @noEscape */ $uniqueScriptId ?>() {
         return {
             visible: false,
             captionText: '',
@@ -28,14 +28,32 @@ $uniqueScriptId = uniqid();
                     this.captionColor = this.config.caption_color;
                     this.visible = true;
                 } else {
-                    
+                    const refreshUrl = this.config.refreshUrl;
+
+                    fetch(refreshUrl, {
+                        "headers": {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        "body": JSON.stringify({
+                            "customer_id": <?= $escaper->escapeJs($viewModel->getCustomerId()) ?>,
+                            "productId": this.config.productId
+                        }),
+                        "method": "POST"
+                    }).then(function (data) {
+                        return data.json();
+                    }).then(response => {
+                        this.captionText = response.caption_text;
+                        this.captionColor = response.caption_color;
+                        this.visible = response.visible;
+                    })
                 }
             }
         }
     }
 </script>
 
-<div x-data="initGuestHighlight_<?= /** @noEscape */ $uniqueScriptId ?>()"
+<div x-data="initProductHighlight_<?= /** @noEscape */ $uniqueScriptId ?>()"
      x-init="updateData();"
      class="amasty-rewards-highlight-catalog">
 
