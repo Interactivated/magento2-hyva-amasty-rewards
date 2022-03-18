@@ -23,10 +23,13 @@ $uniqueScriptId = uniqid();
             captionColor: '',
             config: <?= /** @noEscape */ $viewModel->getJsConfig() ?>,
             updateData() {
-                this.captionText = this.config.caption_text;
-                this.captionColor = this.config.caption_color;
-                debugger;
-                this.visible = true;
+                if (this.config.guest) {
+                    this.captionText = this.config.caption_text;
+                    this.captionColor = this.config.caption_color;
+                    this.visible = true;
+                } else {
+                    
+                }
             }
         }
     }
