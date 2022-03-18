@@ -56,7 +56,7 @@ class HighlightCategory extends AmastyHighlightCategory implements ArgumentInter
     {
         $url = $this->abstractProduct->getAddToCartUrl($product, ['_escape' => false]);
         return json_encode([
-            'refreshUrl' => $this->getRefreshUrl(),
+            'refreshUrl' => str_replace('rewards', 'hyva-amasty-rewards', $this->getRefreshUrl()),
             'productId' => $product->getId(),
             'data' => [
                 'product' => (int) $product->getEntityId(),
