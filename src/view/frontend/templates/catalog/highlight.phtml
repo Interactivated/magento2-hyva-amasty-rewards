@@ -20,9 +20,12 @@ $uniqueScriptId = uniqid();
         return {
             visible: false,
             captionText: '',
+            captionEndText: '',
             captionColor: '',
             config: <?= /** @noEscape */ $viewModel->getJsConfig() ?>,
             updateData() {
+                this.captionEndText = this.config.captionEndText;
+
                 if (this.config.guest) {
                     this.captionText = this.config.caption_text;
                     this.captionColor = this.config.caption_color;
@@ -67,7 +70,7 @@ $uniqueScriptId = uniqid();
             <strong>
                 <?= $escaper->escapeHtml(__('You can earn')) ?>
                 <b x-text="captionText" :style="`color: ${captionColor};`"></b>
-                <?= $escaper->escapeHtml(__('for registration!')) ?>
+                <span x-text="captionEndText"></span>
             </strong>
         </div>
     </div>

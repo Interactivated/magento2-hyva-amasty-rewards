@@ -61,6 +61,7 @@ class HighlightProduct extends AmastyHighlightProduct implements ArgumentInterfa
             $config = [
                 'productId' => $this->getProductId(),
                 'refreshUrl' => str_replace('rewards', 'hyva-amasty-rewards', $this->getRefreshUrl()),
+                'captionEndText' => __('for buying this product!'),
                 'guest' => false
            ];
         } elseif ($this->guestHighlightManagement->isVisible(GuestHighlightManagementInterface::PAGE_PRODUCT)) {
@@ -68,6 +69,7 @@ class HighlightProduct extends AmastyHighlightProduct implements ArgumentInterfa
                     ->getHighlight(GuestHighlightManagementInterface::PAGE_PRODUCT)
                     ->getData();
 
+            $config['captionEndText'] = __('for registration!');
             $config['guest'] = true;
         }
 
