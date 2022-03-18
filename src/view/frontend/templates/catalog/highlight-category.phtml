@@ -21,10 +21,9 @@ $uniqueScriptId = uniqid();
             visible: false,
             captionText: '',
             captionColor: '',
-            updateData(rootEl) {
+            updateData() {
                 const refreshUrl = this.config.refreshUrl;
-                const formKey = rootEl.querySelector('input[name="form_key"]').value;
-                const attributes = `form_key=${formKey}&product=${this.config.data.product}&uenc=${this.config.data.uenc}`;
+                const attributes = `product=${this.config.data.product}&uenc=${this.config.data.uenc}`;
 
                 fetch(refreshUrl, {
                     "headers": {
@@ -51,10 +50,8 @@ $uniqueScriptId = uniqid();
 
 
 <div x-data="initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>()"
-     x-init="updateData($el);"
+     x-init="updateData();"
      class="amasty-rewards-highlight-catalog">
-
-    <?= $block->getBlockHtml('formkey') ?>
 
     <div class="amasty-rewards-loader" x-show="!visible">
         <img src="<?= $escaper->escapeUrl($viewModel->getViewFileUrl('Amasty_Rewards::images/ajax-loader.gif')) ?>" />
