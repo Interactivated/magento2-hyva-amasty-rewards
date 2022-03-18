@@ -32,7 +32,7 @@ $uniqueScriptId = uniqid();
                         'Content-Type': 'application/json'
                     },
                     "body": JSON.stringify({
-                        "customer_id":  <?= $viewModel->getCustomerId() ?>,
+                        "customer_id":  <?= $escaper->escapeJs($viewModel->getCustomerId()) ?>,
                         "productId": this.config.productId,
                         attributes
                     }),
@@ -40,9 +40,9 @@ $uniqueScriptId = uniqid();
                 }).then(function (data) {
                     return data.json();
                 }).then(response => {
-                    console.log(response);
-
-                    // throw new Error(response['error_message']);
+                    this.captionText = response.caption_text;
+                    this.captionColor = response.caption_color;
+                    this.visible = response.visible;
                 })
             }
         }
@@ -56,11 +56,11 @@ $uniqueScriptId = uniqid();
 
     <?= $block->getBlockHtml('formkey') ?>
 
-    <div class="amasty-rewards-loader" data-bind="visible: loader()" style="display: none;">
+    <div class="amasty-rewards-loader" x-show="!visible">
         <img src="<?= $escaper->escapeUrl($viewModel->getViewFileUrl('Amasty_Rewards::images/ajax-loader.gif')) ?>" />
     </div>
 
-    <div x-show="visible" class="amrewards-highlight-container">
+    <div class="amrewards-highlight-container" x-show="visible">
         <div class="caption">
             <strong>
                 <?= $escaper->escapeHtml(__('Earn')) ?>
@@ -68,5 +68,4 @@ $uniqueScriptId = uniqid();
             </strong>
         </div>
     </div>
-
 </div>
