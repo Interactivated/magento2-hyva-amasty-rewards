@@ -17,6 +17,11 @@ class HighlightProduct extends AmastyHighlightProduct implements ArgumentInterfa
     private $guestHighlightManagement;
 
     /**
+     * @var CustomerSessionFactory
+     */
+    private $sessionFactory;
+
+    /**
      * @var CustomerSession
      */
     private $customerSession;
@@ -31,12 +36,21 @@ class HighlightProduct extends AmastyHighlightProduct implements ArgumentInterfa
         parent::__construct($context, $sessionFactory, $guestHighlightManagement, $data);
 
         $this->guestHighlightManagement = $guestHighlightManagement;
+        $this->sessionFactory = $sessionFactory;
         $this->customerSession = $customerSession;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isLoggedIn()
+    {
+        return $this->sessionFactory->create()->isLoggedIn();
     }
 
     public function getCustomerId()
     {
-        return $this->isLoggedIn() ? $this->customerSession->getId() : null;
+        return $this->isLoggedIn() ? $this->customerSession->getId() : 0;
     }
 
     public function getJsConfig()
