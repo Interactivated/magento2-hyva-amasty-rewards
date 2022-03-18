@@ -17,10 +17,10 @@ $uniqueScriptId = uniqid();
 <script>
     function initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>() {
         return {
-            config: <?= /** @noEscape */ $viewModel->getJsConfig($product) ?>,
             visible: false,
             captionText: '',
             captionColor: '',
+            config: <?= /** @noEscape */ $viewModel->getJsConfig($product) ?>,
             updateData() {
                 const refreshUrl = this.config.refreshUrl;
                 const attributes = `product=${this.config.data.product}&uenc=${this.config.data.uenc}`;
@@ -47,7 +47,6 @@ $uniqueScriptId = uniqid();
         }
     }
 </script>
-
 
 <div x-data="initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>()"
      x-init="updateData();"

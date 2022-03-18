@@ -18,20 +18,34 @@ $uniqueScriptId = uniqid();
 <script>
     function initGuestHighlight_<?= /** @noEscape */ $uniqueScriptId ?>() {
         return {
-            highlight: <?= /** @noEscape */ json_encode($viewModel->getJsConfig()) ?> || { visible: false }
+            visible: false,
+            captionText: '',
+            captionColor: '',
+            config: <?= /** @noEscape */ $viewModel->getJsConfig() ?>,
+            updateData() {
+                this.captionText = this.config.caption_text;
+                this.captionColor = this.config.caption_color;
+                debugger;
+                this.visible = true;
+            }
         }
     }
 </script>
 
 <div x-data="initGuestHighlight_<?= /** @noEscape */ $uniqueScriptId ?>()"
+     x-init="updateData();"
      class="amasty-rewards-highlight-catalog">
 
-    <div x-show="highlight.visible" class="amrewards-highlight-container flex">
+    <div class="amasty-rewards-loader" x-show="!visible">
+        <img src="<?= $escaper->escapeUrl($viewModel->getViewFileUrl('Amasty_Rewards::images/ajax-loader.gif')) ?>" />
+    </div>
+
+    <div x-show="visible" class="amrewards-highlight-container flex">
         <?= $heroicons->currencyDollarHtml("w-5", 25, 25) ?>
         <div class="caption ml-1">
             <strong>
                 <?= $escaper->escapeHtml(__('You can earn')) ?>
-                <b x-text="highlight.caption_text" :style="`color: ${highlight.caption_color};`"></b>
+                <b x-text="captionText" :style="`color: ${captionColor};`"></b>
                 <?= $escaper->escapeHtml(__('for registration!')) ?>
             </strong>
         </div>

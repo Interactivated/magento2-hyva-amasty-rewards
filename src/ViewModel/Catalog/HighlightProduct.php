@@ -28,15 +28,19 @@ class HighlightProduct extends AmastyHighlightProduct implements ArgumentInterfa
 
     public function getJsConfig()
     {
+        $config = [];
+
         if ($this->isLoggedIn()) {
-           return [
+            $config = [
                 'productId' => $this->getProductId(),
                 'refreshUrl' => $this->getRefreshUrl()
            ];
         } elseif ($this->guestHighlightManagement->isVisible(GuestHighlightManagementInterface::PAGE_PRODUCT)) {
-            return $this->guestHighlightManagement
+            $config = $this->guestHighlightManagement
                     ->getHighlight(GuestHighlightManagementInterface::PAGE_PRODUCT)
                     ->getData();
         }
+
+        return json_encode($config);
     }
 }
