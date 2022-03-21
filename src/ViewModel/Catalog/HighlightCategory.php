@@ -48,17 +48,13 @@ class HighlightCategory extends AmastyHighlightCategory implements ArgumentInter
         $this->customerSession = $customerSession;
     }
 
-    public function getCustomerId()
-    {
-        return $this->customerSession->getId();
-    }
-
     public function getJsConfig(Product $product)
     {
         $url = $this->abstractProduct->getAddToCartUrl($product, ['_escape' => false]);
         return json_encode([
             'refreshUrl' => str_replace('rewards', 'hyva-amasty-rewards', $this->getRefreshUrl()),
             'productId' => $product->getId(),
+            'customerId' => $this->customerSession->getId(),
             'data' => [
                 'product' => (int) $product->getEntityId(),
                 ActionInterface::PARAM_NAME_URL_ENCODED => $this->urlHelper->getEncodedUrl($url),
