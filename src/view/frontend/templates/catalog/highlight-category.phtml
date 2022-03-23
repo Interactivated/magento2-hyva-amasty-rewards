@@ -31,7 +31,7 @@ $uniqueScriptId = uniqid();
                         'Content-Type': 'application/json'
                     },
                     "body": JSON.stringify({
-                        "customer_id": this.config.customerId,
+                        "customer_id": Number(this.config.customerId),
                         "productId": this.config.productId,
                         attributes
                     }),
