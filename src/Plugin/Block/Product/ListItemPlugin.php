@@ -9,12 +9,6 @@ use Magento\Customer\Model\Context as CustomerContext;
 
 class ListItemPlugin
 {
-
-    /**
-     * @var \Magento\Catalog\Model\Product
-     */
-    private $product = null;
-
     /**
      * @var \Magento\Framework\View\LayoutInterface
      */
@@ -26,16 +20,7 @@ class ListItemPlugin
         $this->layout = $layout;
     }
 
-    public function beforeGetProductPriceHtml(
-        ProductListItem $subject,
-        \Magento\Catalog\Model\Product $product
-    ) {
-        $this->product = $product;
-
-        return [$product];
-    }
-
-    public function afterGetProductPriceHtml(ProductListItem $subject, $result)
+    public function afterGetProductPriceHtml(ProductListItem $subject, $result, \Magento\Catalog\Model\Product $product)
     {
         $block = $this->layout->getBlock('amasty.rewards.highlight.category');
 
@@ -43,7 +28,7 @@ class ListItemPlugin
             return $result;
         }
 
-        $block->setProduct($this->product);
+        $block->setProduct($product);
 
         $result .= $block->toHtml();
 
