@@ -16,41 +16,15 @@ class HighlightProduct extends AmastyHighlightProduct implements ArgumentInterfa
      */
     private $guestHighlightManagement;
 
-    /**
-     * @var CustomerSessionFactory
-     */
-    private $sessionFactory;
-
-    /**
-     * @var CustomerSession
-     */
-    private $customerSession;
-
     public function __construct(
         Template\Context $context,
         CustomerSessionFactory $sessionFactory,
         GuestHighlightManagementInterface $guestHighlightManagement,
-        CustomerSession $customerSession,
         array $data = []
     ) {
         parent::__construct($context, $sessionFactory, $guestHighlightManagement, $data);
 
         $this->guestHighlightManagement = $guestHighlightManagement;
-        $this->sessionFactory = $sessionFactory;
-        $this->customerSession = $customerSession;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function isLoggedIn()
-    {
-        return $this->sessionFactory->create()->isLoggedIn();
-    }
-
-    public function getCustomerId()
-    {
-        return $this->isLoggedIn() ? $this->customerSession->getId() : 0;
     }
 
     public function getJsConfig()
@@ -60,7 +34,7 @@ class HighlightProduct extends AmastyHighlightProduct implements ArgumentInterfa
         if ($this->isLoggedIn()) {
             $config = [
                 'productId' => $this->getProductId(),
-                'refreshUrl' => str_replace('rewards', 'hyva-amasty-rewards', $this->getRefreshUrl()),
+                'refreshUrl' => $this->getRefreshUrl(),
                 'captionEndText' => __('for buying this product!'),
                 'guest' => false
            ];

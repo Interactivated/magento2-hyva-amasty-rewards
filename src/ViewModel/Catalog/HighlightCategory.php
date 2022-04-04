@@ -26,11 +26,6 @@ class HighlightCategory extends AmastyHighlightCategory implements ArgumentInter
      */
     private $abstractProduct;
 
-    /**
-     * @var CustomerSession
-     */
-    private $customerSession;
-
     public function __construct(
         Template\Context $context,
         CustomerSessionFactory $sessionFactory,
@@ -38,23 +33,20 @@ class HighlightCategory extends AmastyHighlightCategory implements ArgumentInter
         Config $config,
         Data $urlHelper,
         AbstractProduct $abstractProduct,
-        CustomerSession $customerSession,
         array $data = []
     ) {
         parent::__construct($context, $sessionFactory, $guestHighlightManagement, $config, $data);
 
         $this->urlHelper = $urlHelper;
         $this->abstractProduct = $abstractProduct;
-        $this->customerSession = $customerSession;
     }
 
     public function getJsConfig(Product $product)
     {
         $url = $this->abstractProduct->getAddToCartUrl($product, ['_escape' => false]);
         return json_encode([
-            'refreshUrl' => str_replace('rewards', 'hyva-amasty-rewards', $this->getRefreshUrl()),
+            'refreshUrl' =>  $this->getRefreshUrl(),
             'productId' => $product->getId(),
-            'customerId' => $this->customerSession->getId(),
             'data' => [
                 'product' => (int) $product->getEntityId(),
                 ActionInterface::PARAM_NAME_URL_ENCODED => $this->urlHelper->getEncodedUrl($url),

@@ -36,10 +36,10 @@ $uniqueScriptId = uniqid();
                     fetch(refreshUrl, {
                         "headers": {
                             'Accept': 'application/json',
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
                         "body": JSON.stringify({
-                            "customer_id": <?= $escaper->escapeJs($viewModel->getCustomerId()) ?>,
                             "productId": this.config.productId
                         }),
                         "method": "POST"

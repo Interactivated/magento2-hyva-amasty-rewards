@@ -28,10 +28,10 @@ $uniqueScriptId = uniqid();
                 fetch(refreshUrl, {
                     "headers": {
                         'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     "body": JSON.stringify({
-                        "customer_id": Number(this.config.customerId),
                         "productId": this.config.productId,
                         attributes
                     }),
