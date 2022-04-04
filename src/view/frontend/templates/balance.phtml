@@ -1,0 +1,34 @@
+<?php
+use Magento\Framework\Escaper;
+
+/** @var Amasty\Rewards\Block\Frontend\Balance $block */
+/** @var Escaper $escaper */
+
+$uniqueScriptId = uniqid();
+?>
+
+<script>
+    function initBalance_<?= /** @noEscape */ $uniqueScriptId ?>() {
+        return {
+            visible: false,
+            captionText: "<?= $escaper->escapeJs($block->getBalanceLabel()) ?>",
+            balance: "<?= $escaper->escapeJs($block->getCustomerBalance()) ?>",
+            getData(data) {
+                if (data.rewards) {
+                    this.balance = data.rewards.balance
+                }
+                this.visible = true;
+            }
+        }
+    }
+</script>
+
+<a x-data="initBalance_<?= /** @noEscape */ $uniqueScriptId ?>()"
+    @private-content-loaded.window="getData($event.detail.data)"
+    href="<?= $escaper->escapeUrl($block->getUrl('amrewards')) ?>"
+    class="flex px-4 py-2 lg:px-5 lg:py-2 hover:bg-gray-100"
+    x-show="visible">
+    <span class="amrewards-label" x-text="captionText"></span>
+    <div class="amrewards-amount ml-1 pl-1 pr-1 bg-yellow-500 font-bold rounded-lg" x-text="balance"></div>
+</a>
+

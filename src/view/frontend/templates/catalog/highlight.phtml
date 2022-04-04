@@ -1,5 +1,4 @@
 <?php
-
 use Hyva\AmastyRewards\ViewModel\Catalog\HighlightProduct;
 use Hyva\Theme\ViewModel\HeroiconsOutline;
 use Magento\Framework\Escaper;
@@ -10,31 +9,68 @@ use Magento\Framework\Escaper;
 /** @var HeroiconsOutline $heroicons */
 $heroicons = $viewModels->require(HeroiconsOutline::class);
 
-/** @var Highlight $viewModel */
+/** @var HighlightProduct $viewModel */
 $viewModel = $viewModels->require(HighlightProduct::class);
 
-$uniqueSciptId = uniqid();
+$uniqueScriptId = uniqid();
 ?>
 
 <script>
-    function initGuestHighlight_<?= $uniqueSciptId ?>() {
+    function initProductHighlight_<?= /** @noEscape */ $uniqueScriptId ?>() {
         return {
-            frontend_class: '',
-            highlight: <?= /** @noEscape */ json_encode($viewModel->getJsConfig()) ?> || { visible: false }
+            visible: false,
+            captionText: '',
+            captionEndText: '',
+            captionColor: '',
+            config: <?= /** @noEscape */ $viewModel->getJsConfig() ?>,
+            updateData() {
+                this.captionEndText = this.config.captionEndText;
+
+                if (this.config.guest) {
+                    this.captionText = this.config.caption_text;
+                    this.captionColor = this.config.caption_color;
+                    this.visible = true;
+                } else {
+                    const refreshUrl = this.config.refreshUrl;
+
+                    fetch(refreshUrl, {
+                        "headers": {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        "body": JSON.stringify({
+                            "productId": this.config.productId
+                        }),
+                        "method": "POST"
+                    }).then(function (data) {
+                        return data.json();
+                    }).then(response => {
+                        this.captionText = response.caption_text;
+                        this.captionColor = response.caption_color;
+                        this.visible = response.visible;
+                    })
+                }
+            }
         }
     }
 </script>
 
-<div x-data="initGuestHighlight_<?= $uniqueSciptId ?>()"
+<div x-data="initProductHighlight_<?= /** @noEscape */ $uniqueScriptId ?>()"
+     x-init="updateData();"
      class="amasty-rewards-highlight-catalog">
 
-    <div x-show="highlight.visible" class="amrewards-highlight-container flex">
+    <div class="amasty-rewards-loader" x-show="!visible">
+        <img src="<?= $escaper->escapeUrl($viewModel->getViewFileUrl('Amasty_Rewards::images/ajax-loader.gif')) ?>" />
+    </div>
+
+    <div x-show="visible" class="amrewards-highlight-container flex">
         <?= $heroicons->currencyDollarHtml("w-5", 25, 25) ?>
         <div class="caption ml-1">
             <strong>
                 <?= $escaper->escapeHtml(__('You can earn')) ?>
-                <b x-text="highlight.caption_text" :style="`color: ${highlight.caption_color};`"></b>
-                <?= $escaper->escapeHtml(__('for registration!')) ?>
+                <b x-text="captionText" :style="`color: ${captionColor};`"></b>
+                <span x-text="captionEndText"></span>
             </strong>
         </div>
     </div>

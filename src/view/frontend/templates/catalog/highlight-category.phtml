@@ -1,0 +1,67 @@
+<?php
+use Hyva\AmastyRewards\ViewModel\Catalog\HighlightCategory;
+use Magento\Framework\Escaper;
+
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+
+/** @var HighlightCategory $viewModel */
+$viewModel = $viewModels->require(HighlightCategory::class);
+
+/** @var Magento\Catalog\Model\Product $product */
+/** @var Amasty\Rewards\Block\Frontend\Catalog\HighlightCategory $block */
+$product = $block->getProduct();
+
+$uniqueScriptId = uniqid();
+?>
+<script>
+    function initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>() {
+        return {
+            visible: false,
+            captionText: '',
+            captionColor: '',
+            config: <?= /** @noEscape */ $viewModel->getJsConfig($product) ?>,
+            updateData() {
+                const refreshUrl = this.config.refreshUrl;
+                const attributes = `product=${this.config.data.product}&uenc=${this.config.data.uenc}`;
+
+                fetch(refreshUrl, {
+                    "headers": {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    "body": JSON.stringify({
+                        "productId": this.config.productId,
+                        attributes
+                    }),
+                    "method": "POST"
+                }).then(function (data) {
+                    return data.json();
+                }).then(response => {
+                    this.captionText = response.caption_text;
+                    this.captionColor = response.caption_color;
+                    this.visible = response.visible;
+                })
+            }
+        }
+    }
+</script>
+
+<div x-data="initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>()"
+     x-init="updateData();"
+     class="amasty-rewards-highlight-catalog">
+
+    <div class="amasty-rewards-loader" x-show="!visible">
+        <img src="<?= $escaper->escapeUrl($viewModel->getViewFileUrl('Amasty_Rewards::images/ajax-loader.gif')) ?>" />
+    </div>
+
+    <div class="amrewards-highlight-container" x-show="visible">
+        <div class="caption">
+            <strong>
+                <?= $escaper->escapeHtml(__('Earn')) ?>
+                <b x-text="captionText" :style="`color: ${captionColor};`"></b>
+            </strong>
+        </div>
+    </div>
+</div>
