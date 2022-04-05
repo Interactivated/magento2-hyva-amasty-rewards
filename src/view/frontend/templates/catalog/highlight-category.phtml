@@ -18,6 +18,7 @@ $uniqueScriptId = uniqid();
     function initHighlightCategory_<?= /** @noEscape */ $uniqueScriptId ?>() {
         return {
             visible: false,
+            displayLoader: false,
             captionText: '',
             captionColor: '',
             config: <?= /** @noEscape */ $viewModel->getJsConfig($product) ?>,
@@ -25,6 +26,7 @@ $uniqueScriptId = uniqid();
                 const refreshUrl = this.config.refreshUrl;
                 const attributes = `product=${this.config.data.product}&uenc=${this.config.data.uenc}`;
 
+                this.displayLoader = true;
                 fetch(refreshUrl, {
                     "headers": {
                         'Accept': 'application/json',
@@ -36,13 +38,17 @@ $uniqueScriptId = uniqid();
                         attributes
                     }),
                     "method": "POST"
-                }).then(function (data) {
-                    return data.json();
-                }).then(response => {
-                    this.captionText = response.caption_text;
-                    this.captionColor = response.caption_color;
-                    this.visible = response.visible;
                 })
+                .then(response => response.json())
+                .then(result => {
+                    this.displayLoader = false;
+                    this.captionText = result.caption_text;
+                    this.captionColor = result.caption_color;
+                    this.visible = result.visible;
+                }).catch(error => {
+                    this.displayLoader = false;
+                    console.error('There has been a problem with your fetch operation:', error);
+                });
             }
         }
     }
@@ -52,7 +58,7 @@ $uniqueScriptId = uniqid();
      x-init="updateData();"
      class="amasty-rewards-highlight-catalog">
 
-    <div class="amasty-rewards-loader" x-show="!visible">
+    <div class="amasty-rewards-loader" x-show="displayLoader">
         <img src="<?= $escaper->escapeUrl($viewModel->getViewFileUrl('Amasty_Rewards::images/ajax-loader.gif')) ?>" />
     </div>
 
