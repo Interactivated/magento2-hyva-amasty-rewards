@@ -149,14 +149,47 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                 window.dispatchEvent(new CustomEvent('cart-data-updated', {detail: {cart: this.cartData}}));
             },
             dispatchRewardsMutationRequest() {
-                if (document.getElementById('rewards_code').value === '') {
+                if (document.getElementById('amreward_amount').value === '') {
                     dispatchMessages([{
                         type: 'error',
                         text: '<?= $escaper->escapeJs(__('Please enter a reward amount!')) ?>'
                     }], 5000)
                 } else {
-                    // this.mutateCouponCode();
+                    this.mutateRewards();
                 }
+            },
+            mutateRewards() {
+                this.startLoading();
+
+                const postUrl = document.getElementById('amrewards-form').action;
+                const rewardAmount = document.getElementById('amreward_amount').value;
+
+                fetch(postUrl, {
+                    headers: {
+                        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                    },
+                    body: new URLSearchParams({
+                        'amreward_amount': rewardAmount,
+                        form_key: hyva.getFormKey(),
+                    }),
+                    method: "POST",
+                    mode: "cors",
+                    credentials: "include",
+                })
+                .then(response => response)
+                .then(data => {
+                    this.clearErrorMessages();
+                    if (data && data.errors) {
+                        this.initErrorMessages(data.errors);
+                    } else {
+                        this.fetchTotalsEstimation();
+                        document.getElementById('amreward_amount').value = '';
+                    }
+                    this.reloadCustomerData();
+                })
+                .catch(displayError).finally(() => {
+                    this.stopLoading();
+                });
             },
             dispatchCouponMutationRequest() {
                 if (!this.cartData.applied_coupons && document.getElementById('coupon_code').value === '') {
