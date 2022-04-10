@@ -19,12 +19,12 @@ if ($block->getCustomerId()) :
 ?>
 
 <template x-if="cartData.items && cartData.items.length">
-    <div class="coupon-form pt-6">
+    <div class="rewards-form pt-6">
         <div class="mx-auto md:mx-0">
             <div class="text-left">
                 <span @click="showRewardsForm = !showRewardsForm"
                       class="cursor-pointer text-primary-lighter select-none whitespace-nowrap"
-                      id="discound-form-toggle"
+                      id="rewards-form-toggle"
                 >
                     <span class="underline">
                         <?= $escaper->escapeHtml(__('Apply Rewards')) ?>
@@ -41,26 +41,26 @@ if ($block->getCustomerId()) :
             </div>
             <div>
 
-                <form id="discount-coupon-form"
+                <form id="amrewards-form"
                       class="block my-4 card"
                       x-show="showRewardsForm"
-                      x-on:submit.prevent="dispatchCouponMutationRequest();"
+                      x-on:submit.prevent="dispatchRewardsMutationRequest();"
                       action=""
                       method="post"
                 >
                     <div class="pointsLeft" data-role="title">
                         <?php /* @escapeNotVerified */ echo __('You Have <strong>%1</strong> points left', $pointsLeft) ?>
                     </div>
-                    <div class="amrewards-points-rate" data-role="title">
+                    <div class="rewards-points-rate" data-role="title">
                         <?php /* @escapeNotVerified */ echo __('%3 for every %1%2', $pointsRate, $currentCurrency, $rateForCurrency) ?>
                     </div>
-                    <div class="fieldset coupon">
-                        <input type="hidden" name="remove" id="remove-coupon" value="0"/>
+                    <div class="fieldset rewards">
+                        <input type="hidden" name="remove" id="remove-rewards" value="0"/>
                         <div class="flex flex-col sm:flex-row gap-2 justify-center md:justify-start">
                             <input type="text"
                                    class="form-input text-center md:text-left border-background-dark"
-                                   id="coupon_code"
-                                   name="coupon_code"
+                                   id="rewards_code"
+                                   name="rewards_code"
                                    value=""
                                    :placeholder="cartData.applied_coupons ?
                                     cartData.applied_coupons[0]['code'] :
@@ -78,10 +78,6 @@ if ($block->getCustomerId()) :
                                 </button>
                         </div>
                     </div>
-                    <?php /**
-                           * @todo: revive captcha integration?
-                        $block->getChildHtml('captcha')
-                           */ ?>
                 </form>
             </div>
         </div>

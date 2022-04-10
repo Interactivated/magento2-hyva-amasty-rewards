@@ -148,6 +148,16 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                 }
                 window.dispatchEvent(new CustomEvent('cart-data-updated', {detail: {cart: this.cartData}}));
             },
+            dispatchRewardsMutationRequest() {
+                if (document.getElementById('rewards_code').value === '') {
+                    dispatchMessages([{
+                        type: 'error',
+                        text: '<?= $escaper->escapeJs(__('Please enter a reward amount!')) ?>'
+                    }], 5000)
+                } else {
+                    // this.mutateCouponCode();
+                }
+            },
             dispatchCouponMutationRequest() {
                 if (!this.cartData.applied_coupons && document.getElementById('coupon_code').value === '') {
                     dispatchMessages([{
