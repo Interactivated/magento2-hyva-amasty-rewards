@@ -161,20 +161,19 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
             mutateRewards() {
                 this.startLoading();
 
-                const postUrl = document.getElementById('amrewards-form').action;
+                // const postUrl = document.getElementById('amrewards-form').action;
                 const rewardAmount = document.getElementById('amreward_amount').value;
 
-                fetch(postUrl, {
-                    headers: {
-                        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                fetch('<?= $escaper->escapeUrl($block->getBaseUrl()) ?>rest/default/V1/hyva-rewards/mine/amount/use', {
+                    "headers": {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: new URLSearchParams({
-                        'amreward_amount': rewardAmount,
-                        form_key: hyva.getFormKey(),
+                    "body": JSON.stringify({
+                        "amount": rewardAmount
                     }),
-                    method: "POST",
-                    mode: "cors",
-                    credentials: "include",
+                    "method": "POST"
                 })
                 .then(response => response)
                 .then(data => {
