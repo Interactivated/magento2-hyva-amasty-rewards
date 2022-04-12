@@ -45,7 +45,7 @@ if ($block->getCustomerId()) :
                       class="block my-4 card"
                       x-show="showRewardsForm"
                       x-on:submit.prevent="dispatchRewardsMutationRequest();"
-                      action="<?php /* @escapeNotVerified */ echo $block->getUrl('amrewards/index/rewardPost') ?>"
+                      action="<?php /* @escapeNotVerified */ echo $block->getUrl('hyvarewards/index/rewardPost') ?>"
                       method="post"
                 >
                     <div class="pointsLeft" data-role="title">
