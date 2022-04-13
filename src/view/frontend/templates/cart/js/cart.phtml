@@ -64,6 +64,7 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
             isTouchDevice: false,
             showCouponForm: false,
             showRewardsForm: false,
+            rewardsAmount: 0,
             startLoading() {
                 this.isLoading = true;
                 document.body.classList.add('overflow-hidden');
@@ -108,6 +109,8 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                         this.initErrorMessages(data.errors);
                     }
 
+                    this.initRewards();
+
                     this.cartData = (data && data.data && (data.data.customerCart || data.data.cart)) || {};
                     this.updateCartDataDependencies();
 
@@ -148,6 +151,11 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                 }
                 window.dispatchEvent(new CustomEvent('cart-data-updated', {detail: {cart: this.cartData}}));
             },
+            initRewards() {
+                setTimeout(() => {
+                    this.rewardsAmount = Number(document.getElementById('amreward_amount').value) || 0;
+                }, 500);
+            },
             dispatchRewardsMutationRequest() {
                 if (document.getElementById('amreward_amount').value === '') {
                     dispatchMessages([{
@@ -183,7 +191,11 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                         this.initErrorMessages(data.errors);
                     } else {
                         this.fetchTotalsEstimation();
-                        document.getElementById('amreward_amount').value = '';
+                        dispatchMessages([{
+                            type: 'info',
+                            text: data.message
+                        }], 5000);
+                        document.getElementById('amreward_amount').disabled = true;
                     }
                     this.reloadCustomerData();
                 })
