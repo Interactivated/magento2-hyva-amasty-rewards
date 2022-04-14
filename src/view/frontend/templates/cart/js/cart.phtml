@@ -109,7 +109,7 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                         this.initErrorMessages(data.errors);
                     }
 
-                    this.initRewards();
+                    setTimeout(() => { this.initRewards(); }, 500);
 
                     this.cartData = (data && data.data && (data.data.customerCart || data.data.cart)) || {};
                     this.updateCartDataDependencies();
@@ -152,9 +152,7 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                 window.dispatchEvent(new CustomEvent('cart-data-updated', {detail: {cart: this.cartData}}));
             },
             initRewards() {
-                setTimeout(() => {
-                    this.rewardsAmount = Number(document.getElementById('amreward_amount').value) || 0;
-                }, 500);
+                this.rewardsAmount = Number(document.getElementById('amreward_amount').value) || 0;
             },
             dispatchRewardsMutationRequest() {
                 if (document.getElementById('amreward_amount').value === '') {
@@ -170,15 +168,17 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                 this.startLoading();
 
                 const postUrl = document.getElementById('amrewards-form').action;
-                const rewardAmount = document.getElementById('amreward_amount').value;
+                const amount = document.getElementById('amreward_amount').value;
+                const isRemove = document.getElementById('remove-rewards').value;
 
                 fetch(postUrl, {
                     headers: {
                         contentType: "application/x-www-form-urlencoded; charset=UTF-8",
                     },
                     body: new URLSearchParams({
-                        'amreward_amount': rewardAmount,
-                        form_key: hyva.getFormKey(),
+                        'remove': isRemove,
+                        'amreward_amount': amount,
+                        form_key: hyva.getFormKey()
                     }),
                     method: "POST",
                     mode: "cors",
@@ -195,6 +195,9 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                             type: 'info',
                             text: data.message
                         }], 5000);
+
+                        this.rewardsAmount = Number(data.usedPoints);
+                        // document.getElementById('amreward_amount').value = Number(data.usedPoints);
                         document.getElementById('amreward_amount').disabled = true;
                     }
                     this.reloadCustomerData();

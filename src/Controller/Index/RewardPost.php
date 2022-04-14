@@ -67,7 +67,10 @@ class RewardPost extends AmastyRewardPost implements HttpPostActionInterface
         try {
             if ($applyCode) {
                 $pointsData = $this->rewardsManagement->set($cartQuote->getId(), $usedPoints);
-                return $resultJson->setData(['message' => __($pointsData['notice'])]);
+                return $resultJson->setData([
+                    'message' => __($pointsData['notice']),
+                    'usedPoints' => $usedPoints
+                ]);
             } else {
                 $itemsCount = $cartQuote->getItemsCount();
 
@@ -75,11 +78,16 @@ class RewardPost extends AmastyRewardPost implements HttpPostActionInterface
                     $this->rewardsManagement->collectCurrentTotals($cartQuote, 0);
                 }
 
-                return $resultJson->setData(['message' => __('You Canceled Reward')]);
+                return $resultJson->setData([
+                    'message' => __('You Canceled Reward'),
+                    'usedPoints' => 0
+                ]);
             }
         } catch (\Exception $e) {
             $this->logger->critical($e);
-            return $resultJson->setData(['message' => __('We cannot Reward.')]);
+            return $resultJson->setData([
+                'message' => __('We cannot Reward.')
+            ]);
         }
     }
 }
