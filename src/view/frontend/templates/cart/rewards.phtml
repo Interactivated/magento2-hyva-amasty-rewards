@@ -56,12 +56,13 @@ if ($block->getCustomerId()) :
                     </div>
                     <div class="fieldset rewards">
                         <input type="hidden" name="remove" id="remove-rewards" :value="rewardsAmount > 0 ? 1 : 0"/>
+                        <input type="hidden" name="hidden-amount" id="amreward-hidden-amount" value="<?=$pointsUsed ?>"/>
                         <div class="flex flex-col sm:flex-row gap-2 justify-center md:justify-start">
                             <input type="text"
                                    class="form-input text-center md:text-left border-background-dark disabled:opacity-25"
                                    id="amreward_amount"
                                    name="amreward_amount"
-                                   value="<?=$pointsUsed ?>"
+                                   value=""
                                    :disabled="rewardsAmount > 0"
                                    :placeholder="'<?= $escaper->escapeHtmlAttr(__('Enter reward amount')) ?>'"
                             />

@@ -152,7 +152,10 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                 window.dispatchEvent(new CustomEvent('cart-data-updated', {detail: {cart: this.cartData}}));
             },
             initRewards() {
-                this.rewardsAmount = Number(document.getElementById('amreward_amount').value) || 0;
+                this.rewardsAmount = Number(document.getElementById('amreward-hidden-amount').value) || 0;
+                if (this.rewardsAmount > 0) {
+                    document.getElementById('amreward_amount').value = this.rewardsAmount;
+                }
             },
             dispatchRewardsMutationRequest() {
                 if (document.getElementById('amreward_amount').value === '') {
@@ -197,8 +200,9 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                         }], 5000);
 
                         this.rewardsAmount = Number(data.usedPoints);
-                        // document.getElementById('amreward_amount').value = Number(data.usedPoints);
-                        document.getElementById('amreward_amount').disabled = true;
+                        if (this.rewardsAmount === 0) {
+                            document.getElementById('amreward_amount').value = ''
+                        }
                     }
                     this.reloadCustomerData();
                 })
