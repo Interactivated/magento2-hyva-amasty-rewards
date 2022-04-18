@@ -29,6 +29,7 @@ $taxLabelAddition = $viewModelTotalsOutput->getTaxLabelAddition();
                 <?= $escaper->escapeHtml(__('Summary')) ?>
             </h2>
         </div>
+        <?= $block->getChildHtml('amasty.reward.highlight') ?>
         <?= $block->getChildHtml('estimate_shipping') ?>
         <?php if ($subtotalFieldShowBoth): ?>
             <template x-if="cartData.prices['subtotal_excluding_tax']">

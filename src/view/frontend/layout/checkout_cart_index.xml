@@ -10,5 +10,18 @@
                 <argument name="template" xsi:type="string">Hyva_AmastyRewards::cart/js/cart.phtml</argument>
             </action>
         </referenceBlock>
+
+        <referenceBlock name="totals">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Hyva_AmastyRewards::cart/totals.phtml</argument>
+            </action>
+            <block class="Amasty\Rewards\Block\Frontend\Cart\Highlight" ifconfig="amrewards/general/enabled"
+                   name="amasty.reward.highlight" template="Amasty_Rewards::cart/highlight.phtml" />
+        </referenceBlock>
+
+        <referenceContainer name="additional.cart.totals">
+            <block class="Hyva\AmastyRewards\Block\Frontend\Cart\Discount" ifconfig="amrewards/general/enabled"
+                   name="checkout.cart.amreward.summary.discount" template="cart/summary/discount.phtml"/>
+        </referenceContainer>
     </body>
 </page>
