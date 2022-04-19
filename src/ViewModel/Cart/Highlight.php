@@ -41,7 +41,7 @@ class Highlight extends AmastyHighlightCart implements ArgumentInterface
             $config['highlight']['caption_end_text'] = __('for buying this product!');
 
         } elseif ($this->guestHighlightManagement->isVisible(GuestHighlightManagementInterface::PAGE_CART)) {
-            $config = $this->guestHighlightManagement
+            $config['highlight'] = $this->guestHighlightManagement
                     ->getHighlight(GuestHighlightManagementInterface::PAGE_CART)
                     ->getData();
             $config['highlight']['caption_end_text'] = __('for registration!');
