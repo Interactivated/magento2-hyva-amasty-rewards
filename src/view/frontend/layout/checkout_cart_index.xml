@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <move element="checkout.cart.amreward" destination="additional.cart.information" />
+
+        <referenceBlock name="cart_main_js">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Hyva_AmastyRewards::cart/js/cart.phtml</argument>
+            </action>
+        </referenceBlock>
+
+        <referenceBlock name="totals">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Hyva_AmastyRewards::cart/totals.phtml</argument>
+            </action>
+            <block class="Amasty\Rewards\Block\Frontend\Cart\Highlight" ifconfig="amrewards/general/enabled"
+                   name="amasty.reward.highlight" template="Amasty_Rewards::cart/highlight.phtml" cacheable="false"/>
+        </referenceBlock>
+    </body>
+</page>

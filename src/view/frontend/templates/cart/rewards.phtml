@@ -1,0 +1,86 @@
+<?php
+
+use Magento\Framework\Escaper;
+use Amasty\Rewards\Block\Frontend\Cart\Rewards;
+// use Magento\Framework\View\Element\Template;
+
+/**
+ * @var Rewards $block
+ * @var Escaper $escaper
+ */
+
+if ($block->getCustomerId()) :
+
+    $pointsLeft = $block->getPoints();
+    $pointsUsed = $block->getUsedPoints();
+    $pointsRate = $block->getPointsRate();
+    $currentCurrency = $block->getCurrentCurrencyCode();
+    $rateForCurrency = $block->getRateForCurrency();
+?>
+
+<template x-if="cartData.items && cartData.items.length">
+    <div class="rewards-form pt-6">
+        <div class="mx-auto md:mx-0">
+            <div class="text-left">
+                <span @click="showRewardsForm = !showRewardsForm"
+                      class="cursor-pointer text-primary-lighter select-none whitespace-nowrap"
+                      id="rewards-form-toggle"
+                >
+                    <span class="underline">
+                        <?= $escaper->escapeHtml(__('Apply Rewards')) ?>
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="w-4 h-4 inline-block ml-2"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path x-show="!showRewardsForm" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 9l-7 7-7-7"/>
+                        <path
+                            x-show="showRewardsForm" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 15l7-7 7 7"/>
+                    </svg>
+                </span>
+            </div>
+            <div>
+
+                <form id="amrewards-form"
+                      class="block my-4 card"
+                      x-show="showRewardsForm"
+                      x-on:submit.prevent="dispatchRewardsMutationRequest();"
+                      action="<?php /* @escapeNotVerified */ echo $block->getUrl('hyvarewards/index/rewardPost') ?>"
+                      method="post"
+                >
+                    <div class="pointsLeft" data-role="title">
+                        <?php /* @escapeNotVerified */ echo __('You Have <strong>%1</strong> points left', $pointsLeft) ?>
+                    </div>
+                    <div class="rewards-points-rate" data-role="title">
+                        <?php /* @escapeNotVerified */ echo __('%3 for every %1%2', $pointsRate, $currentCurrency, $rateForCurrency) ?>
+                    </div>
+                    <div class="fieldset rewards">
+                        <input type="hidden" name="remove" id="remove-rewards" :value="rewardsAmount > 0 ? 1 : 0"/>
+                        <input type="hidden" name="hidden-amount" id="amreward-hidden-amount" value="<?=$pointsUsed ?>"/>
+                        <div class="flex flex-col sm:flex-row gap-2 justify-center md:justify-start">
+                            <input type="text"
+                                   class="form-input text-center md:text-left border-background-dark disabled:opacity-25"
+                                   id="amreward_amount"
+                                   name="amreward_amount"
+                                   value=""
+                                   :disabled="rewardsAmount > 0"
+                                   :placeholder="'<?= $escaper->escapeHtmlAttr(__('Enter reward amount')) ?>'"
+                            />
+                                <button class="btn btn-primary md:text-sm lg:text-base justify-center" type="submit"
+                                        value="<?= $escaper->escapeHtmlAttr(__('Apply')) ?>">
+                                    <span x-show="rewardsAmount == 0">
+                                        <?= $escaper->escapeHtml(__('Apply')) ?>
+                                    </span>
+                                    <span x-show="rewardsAmount > 0">
+                                        <?= $escaper->escapeHtml(__('Cancel')) ?>
+                                    </span>
+                                </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</template>
+
+<?php endif; ?>
