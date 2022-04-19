@@ -106,41 +106,17 @@ class Discount extends \Magento\Framework\View\Element\Template
     public function getApplyedDiscount()
     {
         $quote = $this->checkoutSession->getQuote();
-
-        $storeId = $quote->getStoreId();
-
-        $total = $this->checkoutSession->getQuote()->getTotals();
-        $items = $this->checkoutSession->getQuote()->getItems();
-
-        $spentPoints = (float)$quote->getData(EntityInterface::POINTS_SPENT);
+        $items = $quote->getItems();
 
         if (!$items) {
             return $this;
         }
 
-        $appliedPoints = $this->calculator->calculateDiscount($items, $total['shipping'], $spentPoints);
+        $total = $quote->getTotals()['shipping'];
+        $spentPoints = (float)$quote->getData(EntityInterface::POINTS_SPENT);
+        $this->calculator->calculateDiscount($items, $total, $spentPoints);
 
-        $isEnableLimit = $this->config->isEnableLimit($storeId);
-
-        if ((int)$isEnableLimit === RedemptionLimitTypes::LIMIT_PERCENT) {
-            $limitPercent = $this->config->getRewardPercentLimit($storeId);
-            $rate = $this->config->getPointsRate($storeId);
-            $basePoints = $appliedPoints / $rate;
-            $allowedPercent = round(($total->getSubtotal() / 100 * $limitPercent) / $quote->getBaseToQuoteRate(), 2);
-
-            if ($basePoints > $allowedPercent) {
-                $itemsCount = $quote->getItemsCount();
-
-                if ($itemsCount) {
-                    $total->setDiscountAmount(0);
-                    $total->setBaseDiscountAmount(0);
-                }
-
-                $quote->setData(EntityInterface::POINTS_SPENT, 0);
-            }
-        }
-
-        return $this->getQuoteAppliedPoints($items);
+        return $total->getTotalAmount('discount');
     }
 
     /**
