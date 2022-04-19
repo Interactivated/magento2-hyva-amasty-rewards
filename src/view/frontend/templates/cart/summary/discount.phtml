@@ -1,0 +1,17 @@
+<?php
+
+/**
+ * @var $block Hyva\AmastyRewards\Block\Frontend\Cart\Discount
+ */
+// @codingStandardsIgnoreFile
+
+if ($block->getCustomerId()) :
+
+    $pointsUsed = $block->getUsedPoints();
+    $applyedDiscount = $block->getApplyedDiscount();
+    ?>
+
+<?=$pointsUsed ?>
+<?= $applyedDiscount ?>
+
+<?php endif; ?>
