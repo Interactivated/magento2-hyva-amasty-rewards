@@ -109,6 +109,8 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                         this.initErrorMessages(data.errors);
                     }
 
+                    this.fetchTotalsEstimation();
+
                     setTimeout(() => { this.initRewards(); }, 500);
 
                     this.cartData = (data && data.data && (data.data.customerCart || data.data.cart)) || {};
@@ -748,17 +750,25 @@ $directoryViewModel = $viewModels->require(DirectoryViewModel::class);
                             }
                         })
 
-                        let discounts = null;
+                        let discounts = [];
                         if (result.coupon_code) {
                             this.cartData.applied_coupons = [{code: result.coupon_code}]
-                            discounts = [
-                                {
-                                    label: result.coupon_code,
-                                    amount: {
-                                        value: Math.abs(result.discount_amount)
-                                    }
+                            discounts.push({
+                                label: result.coupon_code,
+                                amount: {
+                                    value: Math.abs(result.discount_amount)
                                 }
-                            ]
+                            });
+                        }
+
+                        let rewardsDiscount = null;
+                        if (rewardsDiscount = result.total_segments.find(item => item.code === 'discount')) {
+                            discounts.push({
+                                label: rewardsDiscount.title,
+                                amount: {
+                                    value: Math.abs(rewardsDiscount.value)
+                                }
+                            });
                         }
 
                         this.cartData.prices = {

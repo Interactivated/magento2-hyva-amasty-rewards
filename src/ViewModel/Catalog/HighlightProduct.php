@@ -4,7 +4,6 @@ namespace Hyva\AmastyRewards\ViewModel\Catalog;
 
 use Amasty\Rewards\Block\Frontend\Catalog\HighlightProduct as AmastyHighlightProduct;
 use Amasty\Rewards\Api\GuestHighlightManagementInterface;
-use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Customer\Model\SessionFactory as CustomerSessionFactory;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Block\ArgumentInterface;

@@ -1,5 +1,28 @@
-<?php /** @var \Amasty\Rewards\Block\Frontend\Cart\Highlight $block */ ?>
+<?php
+use Hyva\AmastyRewards\ViewModel\Cart\Highlight;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Framework\Escaper;
 
-<?php $layout = $block->getJsLayout() ?>
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
 
-123
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+/** @var Highlight $viewModel */
+$viewModel = $viewModels->require(Highlight::class);
+$config = $viewModel->getJsConfig()
+?>
+
+<?php if ($highlight = $config['highlight']): ?>
+    <div class="amrewards-highlight-container flex">
+        <?= $heroicons->currencyDollarHtml("w-5", 25, 25) ?>
+        <div class="caption ml-1">
+            <strong>
+                <?= $escaper->escapeHtml(__('You can earn')) ?>
+                <b style="color: <?= $escaper->escapeHtmlAttr($highlight['caption_color']) ?>;"><?= $escaper->escapeHtml($highlight['caption_text']) ?></b>
+                <span><?= $escaper->escapeHtml($highlight['caption_end_text']) ?></span>
+            </strong>
+        </div>
+    </div>
+<?php endif; ?>
