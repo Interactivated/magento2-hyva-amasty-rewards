@@ -3,11 +3,11 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="rewards.balance" remove="true"/>
-        <!-- Example display the Balance block in the customer menu place -->
-        <!--
         <referenceBlock name="header.customer">
-            <block class="Amasty\Rewards\Block\Frontend\Balance" name="rewards.logged.balance" template="Hyva_AmastyRewards::balance.phtml"/>
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Hyva_AmastyRewards::header/customer-menu.phtml</argument>
+            </action>
+            <block class="Amasty\Rewards\Block\Frontend\Balance" name="rewards.header.balance" template="Hyva_AmastyRewards::balance.phtml"/>
         </referenceBlock>
-        -->
     </body>
 </page>
