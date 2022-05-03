@@ -45,7 +45,7 @@ if ($block->getCustomerId()) :
                       class="block my-4 card"
                       x-show="showRewardsForm"
                       x-on:submit.prevent="dispatchRewardsMutationRequest();"
-                      action="<?php /* @escapeNotVerified */ echo $block->getUrl('hyvarewards/index/rewardPost') ?>"
+                      action="<?= $escaper->escapeUrl($block->getUrl('hyvarewards/index/rewardPost')) ?>"
                       method="post"
                 >
                     <div class="pointsLeft" data-role="title">
@@ -64,10 +64,10 @@ if ($block->getCustomerId()) :
                                    name="amreward_amount"
                                    value=""
                                    :disabled="rewardsAmount > 0"
-                                   :placeholder="'<?= $escaper->escapeHtmlAttr(__('Enter reward amount')) ?>'"
+                                   :placeholder="'<?= $escaper->escapeJs(__('Enter reward amount')) ?>'"
                             />
                                 <button class="btn btn-primary md:text-sm lg:text-base justify-center" type="submit"
-                                        value="<?= $escaper->escapeHtmlAttr(__('Apply')) ?>">
+                                        value="<?= $escaper->escapeJs(__('Apply')) ?>">
                                     <span x-show="rewardsAmount == 0">
                                         <?= $escaper->escapeHtml(__('Apply')) ?>
                                     </span>
