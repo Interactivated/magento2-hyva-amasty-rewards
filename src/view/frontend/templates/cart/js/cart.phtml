@@ -36,140 +36,13 @@ $storeConfigViewModel = $viewModels->require(StoreConfigViewModel::class);
 
 ?>
 <script>
-    'use strict';
+    const origInitCart = initCart;
+
     function initCart() {
-
-        // Local estimation form state so state can be rebuilt in case it is overridden after item mutation queries.
-        const estimateShippingState = {
-            country: '',
-            region_id: null,
-            region: '',
-            postcode: ''
-        };
-
-        const displayError = (error) => {
-            console.error(error);
-            typeof window.dispatchMessages !== "undefined" && window.dispatchMessages(
-                [{
-                    type: "error",
-                    text: "<?= $escaper->escapeJs(__("Something went wrong. Please try again.")) ?>"
-                }], 10000
-            );
-        };
-
-        // the default isLoading state is true, so the class should be present from the beginning, too.
-        document.body.classList.add('overflow-hidden');
-
-        return {
-            cartId: null,
-            customerToken: null,
-            cartData: [],
-            cartEmpty: true,
-            isLoading: true,
-            isTouchDevice: false,
+        return {...origInitCart(), ...{
             showCouponForm: false,
             showRewardsForm: false,
             rewardsAmount: 0,
-            startLoading() {
-                this.isLoading = true;
-                document.body.classList.add('overflow-hidden');
-            },
-            stopLoading() {
-                this.isLoading = false;
-                document.body.classList.remove('overflow-hidden');
-            },
-            getCartQuery() {
-                return <?= /** @noEscape */ json_encode($viewModelGraphQl->query(
-                    'cart_query',
-                    'query guestCartQuery($cartId: String!) {cart (cart_id: $cartId) {' .
-                    $viewModelCart->getCartGraphQlQuery() .
-                    '}}'
-                )); ?>
-            },
-            getCustomerCartQuery() {
-                return <?= /** @noEscape */ json_encode($viewModelGraphQl->query(
-                    'customer_cart_query',
-                    'query customerCartQuery{customerCart {' . $viewModelCart->getCartGraphQlQuery() . '}}'
-                )); ?>
-            },
-            getCart() {
-                this.startLoading();
-                const query = (this.customerToken && this.getCustomerCartQuery()) || this.getCartQuery();
-                const variables = this.customerToken ? {} : {cartId: this.cartId}
-
-                fetch('<?= $escaper->escapeUrl($block->getBaseUrl()) ?>graphql', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Store': '<?= /* @noEscape */ $viewModelStore->getStoreCode() ?>'
-                        },
-                        credentials: 'include',
-                        body: JSON.stringify({query: query, variables: variables})
-                    }
-                ).then((response) => {
-                        return response.json()
-                    }
-                ).then((data) => {
-                    if (data && data.errors) {
-                        this.initErrorMessages(data.errors);
-                    }
-
-                    this.fetchTotalsEstimation();
-
-                    setTimeout(() => { this.initRewards(); }, 500);
-
-                    this.cartData = (data && data.data && (data.data.customerCart || data.data.cart)) || {};
-                    this.updateCartDataDependencies();
-
-                }).catch(displayError).finally(() => {
-                    this.stopLoading();
-                });
-            },
-            getCartItems() {
-                return (this.cartData && this.cartData.items || []).filter(cartItem => !!cartItem);
-            },
-            getCartItemImage(item) {
-                <?php if($storeConfigViewModel->getStoreConfig(
-                Magento\ConfigurableProduct\Model\Product\Configuration\Item\ItemProductResolver::CONFIG_THUMBNAIL_SOURCE)
-            === Thumbnail::OPTION_USE_OWN_IMAGE
-                ):
-                ?>
-                if(item && item.configured_variant) {
-                    return item.configured_variant.small_image
-                }
-                <?php endif; ?>
-                return item.product.small_image
-            },
-            getCartByCustomerSectionData(data) {
-                if (data && data.cart && data.cart.cartId) {
-                    this.cartId = data.cart.cartId;
-                    this.customerToken = data.customer.signin_token
-                    if (data.cart.summary_count !== this.cartData.total_quantity) {
-                        this.getCart();
-                    }
-                    this.getCountriesByCustomerSectionData(data); // for shipping estimation
-                } else {
-                    this.cartEmpty = true;
-                    this.stopLoading();
-                }
-            },
-            isTouchEnabled() {
-                this.isTouchDevice = ('ontouchstart' in window) ||
-                    (navigator.maxTouchPoints > 0) ||
-                    (navigator.msMaxTouchPoints > 0);
-            },
-            updateCartDataDependencies() {
-                this.showCouponForm = this.cartData.applied_coupons;
-                this.cartEmpty = !(
-                    this.cartData &&
-                    this.cartData.items &&
-                    Object.keys(this.cartData.items).length
-                );
-                if (this.showEstimateShipping) {
-                    this.initEstimateShipping();
-                }
-                window.dispatchEvent(new CustomEvent('cart-data-updated', {detail: {cart: this.cartData}}));
-            },
             initRewards() {
                 this.rewardsAmount = Number(document.getElementById('amreward-hidden-amount').value) || 0;
                 if (this.rewardsAmount > 0) {
@@ -206,516 +79,62 @@ $storeConfigViewModel = $viewModels->require(StoreConfigViewModel::class);
                     mode: "cors",
                     credentials: "include",
                 })
-                .then(response => response.json())
-                .then(data => {
-                    this.clearErrorMessages();
-                    if (data && data.errors) {
-                        this.initErrorMessages(data.errors);
-                    } else {
-                        this.fetchTotalsEstimation();
-                        dispatchMessages([{
-                            type: 'info',
-                            text: data.message
-                        }], 5000);
-
-                        this.rewardsAmount = Number(data.usedPoints);
-                        if (this.rewardsAmount === 0) {
-                            document.getElementById('amreward_amount').value = ''
-                        }
-                    }
-                    this.reloadCustomerData();
-                })
-                .catch(displayError).finally(() => {
-                    this.stopLoading();
-                });
-            },
-            dispatchCouponMutationRequest() {
-                if (!this.cartData.applied_coupons && document.getElementById('coupon_code').value === '') {
-                    dispatchMessages([{
-                        type: 'error',
-                        text: '<?= $escaper->escapeJs(__('Please enter a coupon code!')) ?>'
-                    }], 5000)
-                } else {
-                    this.mutateCouponCode();
-                }
-            },
-            mutateCouponCode() {
-                this.startLoading();
-
-                const couponCode = document.getElementById('coupon_code').value;
-                const couponQuery = couponCode
-                    ? `<?= /** @noEscape */ $viewModelGraphQl->query(
-                        'cart_coupon_add_mutation',
-                        'mutation applyCouponToCartMutation($cartId: String!, $couponCode: String!) {' .
-                        $viewModelCart->getCouponAddQuery() .
-                        '}'
-                    ) ?>`
-                    : `<?= /** @noEscape */ $viewModelGraphQl->query(
-                        'cart_coupon_remove_mutation',
-                        'mutation removeCouponFromCartMutation($cartId: String!) {' .
-                        $viewModelCart->getCouponRemoveQuery() .
-                        '}'
-                    ) ?>`;
-                    const variables = {
-                        couponCode: couponCode,
-                        cartId: this.cartId
-                    };
-
-                fetch('<?= $escaper->escapeUrl($block->getBaseUrl()) ?>graphql', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json;charset=utf-8',
-                            'Store': '<?= /* @noEscape */ $viewModelStore->getStoreCode() ?>'
-                        },
-                        body: JSON.stringify({query: couponQuery, variables: variables})
-                    }
-                ).then((response) => {
-                        return response.json()
-                    }
-                ).then((data) => {
-                    this.clearErrorMessages();
-                    if (data && data.errors) {
-                        this.initErrorMessages(data.errors);
-                        this.getCart();
-                    } else {
-                        this.cartData = (
-                            data &&
-                            data.data &&
-                            (
-                                (data.data.removeCouponFromCart && (data.data.removeCouponFromCart.cart)) ||
-                                (data.data.applyCouponToCart && (data.data.applyCouponToCart.cart))
-                            )
-                        ) || [];
-                        this.updateCartDataDependencies();
-                        document.getElementById('coupon_code').value = '';
-                    }
-                    this.reloadCustomerData();
-                }).catch(displayError).finally(() => {
-                    this.stopLoading();
-                });
-            },
-            clearErrorMessages() {
-                window.dispatchEvent(new CustomEvent('clear-messages'));
-            },
-            initErrorMessages(errors) {
-                const messages = [];
-                for (let error in Object.keys(errors)) {
-                    messages.push({type: 'error', text: errors[error].message});
-                }
-                typeof window.dispatchMessages !== "undefined" && window.dispatchMessages(messages, 10000);
-            },
-            mutateItemQty(itemId, qty) {
-                this.startLoading();
-
-                const cartItemUpdateQuery = `<?= /** @noEscape */ $viewModelGraphQl->query(
-                    'cart_item_update_mutation',
-                    'mutation updateCartItemQtyMutation($cartId: String!, $itemId: Int, $qty: Float) {' .
-                    $viewModelCart->getCartItemUpdateQuery() .
-                    '}'
-                ) ?>`;
-                const variables = {
-                    cartId: this.cartId,
-                    itemId: itemId,
-                    qty: qty
-                };
-
-                fetch('<?= $escaper->escapeUrl($block->getBaseUrl()) ?>graphql', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json;charset=utf-8',
-                            'Store': '<?= /* @noEscape */ $viewModelStore->getStoreCode() ?>'
-                        },
-                        body: JSON.stringify({query: cartItemUpdateQuery, variables: variables})
-                    }
-                ).then((response) => {
-                        return response.json()
-                    }
-                ).then((data) => {
-                    this.clearErrorMessages();
-                    if (data.errors) {
-                        this.initErrorMessages(data.errors);
-                        this.getCart();
-
-                    } else {
-                        this.cartData = (
-                            data &&
-                            data.data &&
-                            (data.data.updateCartItems && (data.data.updateCartItems.cart))
-                        ) || [];
-                        this.updateCartDataDependencies();
-                    }
-                    this.reloadCustomerData();
-                }).catch(displayError).finally(() => {
-                    this.stopLoading();
-                });
-            },
-            mutateItemRemove(itemId) {
-                this.startLoading();
-                const cartItemRemoveQuery = `<?= /** @noEscape */ $viewModelGraphQl->query(
-                    'cart_item_remove_mutation',
-                    'mutation removeCartItemMutation($cartId: String!, $itemId: Int) {' .
-                    $viewModelCart->getCartItemRemoveQuery() .
-                    '}'
-                )?>`;
-                const variables = {
-                    cartId: this.cartId,
-                    itemId: itemId
-                };
-
-                fetch('<?= $escaper->escapeUrl($block->getBaseUrl()) ?>graphql', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json;charset=utf-8',
-                            'Store': '<?= /* @noEscape */ $viewModelStore->getStoreCode() ?>'
-                        },
-                        body: JSON.stringify({query: cartItemRemoveQuery, variables})
-                    }
-                ).then((response) => {
-                        return response.json()
-                    }
-                ).then((data) => {
-                    this.clearErrorMessages();
-                    if (data.errors) {
-                        this.initErrorMessages(data.errors);
-                        this.getCart();
-
-                    } else {
-                        this.cartData = (
-                            data &&
-                            data.data &&
-                            (
-                                data.data.removeItemFromCart &&
-                                (data.data.removeItemFromCart.cart)
-                            )
-                        ) || [];
-                        this.updateCartDataDependencies();
-                    }
-                    this.reloadCustomerData();
-                }).catch(displayError).finally(() => {
-                    this.stopLoading();
-                });
-            },
-            reloadCustomerData() {
-                const reloadCustomerDataEvent = new CustomEvent("reload-customer-section-data");
-                window.dispatchEvent(reloadCustomerDataEvent);
-            },
-
-            // ------------- estimate shipping -------------
-
-            showEstimateShipping: false,
-            countries: false,
-            estimatedShippingRatesLoading: false,
-            currentCurrency: '<?= $escaper->escapeJs($currencyViewModel->getCurrentCurrencyCode()) ?>',
-            selectedShippingRate: null, // this property exists to check the correct radio input when clicked
-            estimationDefaultAddress: {
-                country: { code: '<?= /** @noEscape */ $directoryViewModel->getDefaultCountry() ?>' },
-                region: { region_id: null, label: '' },
-                postcode: ''
-            },
-            toggleEstimateShipping() {
-                this.showEstimateShipping = !this.showEstimateShipping;
-                // Trigger initial estimation
-                if (this.showEstimateShipping) {
-                    if (this.cartEmpty.is_virtual) {
-                        this.fetchTotalsEstimation();
-                    } else {
-                        this.estimateShippingRequest();
-                    }
-                }
-            },
-            initEstimateShipping() {
-                // called whenever cartData state is set after GraphQL queries
-                if (! this.selectedShippingRate && this.getSelectedShippingMethod()) {
-                    const method = this.getSelectedShippingMethod();
-                    this.selectedShippingRate = method.carrier_code + '_' + method.method_code;
-                }
-
-                // Reset the local estimation state in case it was overridden by GraphQL after cart mutations
-                const country = estimateShippingState.country || this.getEstimationCountry();
-                const regionId = estimateShippingState.region_id || this.getEstimationRegionId();
-                const regionName = estimateShippingState.region || this.getEstimationRegionName();
-
-                if (! this.countries[this.getEstimationCountry()]) {
-                    console.error('[Configuration Error] The default country is not in the list of allowed countries!');
-                    this.countries[this.getEstimationCountry()] = {name: ''};
-                }
-
-                if (regionId) {
-                    this.setEstimationCountry(country);
-                    this.setEstimationRegionById(regionId);
-                } else if (regionName) {
-                    this.setEstimationCountry(country);
-                    this.setEstimationRegionName(regionName);
-                } else {
-                    this.initEstimationRegionByCountry(country);
-                }
-                this.setEstimationPostcode(estimateShippingState.postcode || this.getEstimationPostcode());
-                this.estimateShippingRequest();
-            },
-            getCountriesByCustomerSectionData(data) {
-                // this is a required initialization method, called after section data is received
-                this.countries = data["directory-data"];
-            },
-            getSortedCountryCodes() {
-                return this.sortObjectMapByName(this.countries).filter(code => code !== 'data_id');
-            },
-            getSortedRegionIds(countryCode) {
-                return this.countries[countryCode].regions
-                    ? this.sortObjectMapByName(this.countries[countryCode].regions)
-                    : [];
-            },
-            sortObjectMapByName(oMap) {
-                return Object.keys(oMap).sort((a, b) => {
-                    const A = oMap[a].name ? oMap[a].name.toUpperCase() : '';
-                    const B = oMap[b].name ? oMap[b].name.toUpperCase() : '';
-                    if (A < B) return -1;
-                    if (A > B) return 1;
-                    return 0;
-                });
-            },
-            getBillingAddress() {
-                if (! this.cartData) {
-                    this.cartData = {};
-                }
-                if (! this.cartData.billing_address || Object.keys(this.cartData.billing_address).length === 0) {
-                    this.cartData.billing_address = JSON.parse(JSON.stringify(this.estimationDefaultAddress));
-                }
-                return this.cartData.billing_address;
-            },
-            getShippingAddress() {
-                if (! this.cartData) {
-                    this.cartData = {};
-                }
-                if (! this.cartData.shipping_addresses || this.cartData.shipping_addresses.length === 0) {
-                    this.cartData.shipping_addresses = [JSON.parse(JSON.stringify(this.estimationDefaultAddress))];
-                }
-                return this.cartData.shipping_addresses[0];
-            },
-            getEstimationAddress() {
-                return this.cartData && this.cartData.is_virtual
-                    ? this.getBillingAddress()
-                    : this.getShippingAddress();
-            },
-            getEstimationCountry() {
-                return this.getEstimationAddress().country.code;
-            },
-            selectEstimationCountry(countryCode) {
-                if (countryCode !== this.getEstimationCountry()) {
-                    this.setEstimationCountry(countryCode);
-                    this.initEstimationRegionByCountry(countryCode);
-                    this.estimateShippingRequest();
-                }
-            },
-            setEstimationCountry(countryCode) {
-                this.getEstimationAddress().country.code = countryCode;
-                estimateShippingState.country = countryCode;
-            },
-            getEstimationRegionName() {
-                return this.getEstimationAddress().region.label;
-            },
-            setEstimationRegionName(regionName) {
-                this.getEstimationAddress().region.label = regionName;
-                estimateShippingState.region = regionName;
-            },
-            selectEstimationRegionName(regionName) {
-                if (regionName !== this.getEstimationRegionName()) {
-                    this.setEstimationRegionName(regionName);
-                    if (("" + regionName).trim() !== '') {
-                        this.estimateShippingRequest();
-                    }
-                }
-            },
-            setEstimationRegionById(regionId) {
-                this.setEstimationRegionId(regionId);
-                const region = this.countries[this.getEstimationCountry()].regions[regionId];
-                this.setEstimationRegionName(region ? region.name : '');
-            },
-            getEstimationRegionId() {
-                return this.getEstimationAddress().region.region_id;
-            },
-            selectEstimationRegionId(regionId) {
-                const id = parseInt(regionId);
-                if (id !== this.getEstimationRegionId()) {
-                    this.setEstimationRegionById(id)
-                    this.estimateShippingRequest();
-                }
-            },
-            setEstimationRegionId(regionId) {
-                this.getEstimationAddress().region.region_id = regionId;
-                estimateShippingState.region_id = regionId;
-            },
-            initEstimationRegionByCountry(countryCode) {
-                if (this.countries[countryCode].regions) {
-                    if (! this.countries[countryCode].regions[this.getEstimationRegionId()]) {
-                        this.setEstimationRegionById(this.getSortedRegionIds(countryCode)[0]);
-                    }
-                } else {
-                    this.setEstimationRegionId(null);
-                    this.setEstimationRegionName('');
-                }
-            },
-            getEstimationPostcode() {
-                return this.getEstimationAddress().postcode;
-            },
-            setEstimationPostcode(postcode) {
-                this.getEstimationAddress().postcode = postcode;
-                estimateShippingState.postcode = postcode;
-            },
-            selectEstimationPostcode(postcode) {
-                if (postcode !== this.getEstimationPostcode()) {
-                    this.setEstimationPostcode(postcode);
-                    this.estimateShippingRequest()
-                }
-            },
-            getEstimatedShippingRates() {
-                const address = this.getShippingAddress();
-                return address.estimated_shipping_methods && address.estimated_shipping_methods.length > 0
-                    ? address.estimated_shipping_methods
-                    : [];
-            },
-            getAvailableShippingRates() {
-                const address = this.getShippingAddress();
-                return address.available_shipping_methods && address.available_shipping_methods.length > 0
-                    ? address.available_shipping_methods
-                    : [];
-            },
-            setAvailableShippingRates(rates) {
-                /*
-                 * Array of rate objects.
-                 * Rate structure:
-                 * {
-                 *   price_excl_tax {value currency}
-                 *   price_incl_tax {value currency}
-                 *   carrier_title
-                 *   carrier_code
-                 *   method_title
-                 *   method_code
-                 * }
-                 *
-                 * Please note: there is no "amount" on the available shipping rates!
-                 * This is distinct from the selected shipping method data structure.
-                 */
-                this.getShippingAddress().available_shipping_methods = rates;
-            },
-            getSelectedShippingMethod() {
-                const address = this.getShippingAddress();
-                if (address.selected_shipping_method && Object.keys(address.selected_shipping_method).length > 0) {
-                    return address.selected_shipping_method;
-                }
-                return {
-                    amount: {value: null, currency: null},
-                    carrier_code: null,
-                    method_code: null
-                };
-            },
-            removeSelectedShippingMethod() {
-                this.selectedShippingRate = '';
-                this.getShippingAddress().selected_shipping_method = null;
-            },
-            getUnavailableShippingRates() {
-                return this.getEstimatedShippingRates().filter(rate => ! rate.available);
-            },
-            setSelectedShippingMethod(carrierCode, methodCode, amount) {
-                /*
-                 * Data structure:
-                 * {
-                 *   amount {value currency}
-                 *   carrier_code
-                 *   carrier_title
-                 *   method_code
-                 *   method_title
-                 * }
-                 *
-                 * Please note: there is no price_incl_tax and price_excl tax on the selected shipping method.
-                 * Instead there is the "amount". This is distinct from the available shipping methods.
-                 */
-                const matches = this.getAvailableShippingRates()
-                    .filter(rate => rate.carrier_code === carrierCode && rate.method_code === methodCode);
-
-                let method;
-                if (matches.length === 1) {
-                    method = JSON.parse(JSON.stringify(matches[0]));
-                    method.amount = amount;
-                } else {
-                    method = {
-                        amount: amount,
-                        carrier_code: carrierCode,
-                        carrier_title: carrierCode,
-                        method_code: methodCode,
-                        method_title: methodCode
-                    }
-
-                }
-                this.selectedShippingRate = method.carrier_code + '_' + method.method_code;
-                return this.getShippingAddress().selected_shipping_method = method;
-            },
-            estimateShippingRequest() {
-                const baseUrl = '<?= $escaper->escapeUrl($block->getBaseUrl()) ?>'
-                const path = this.customerToken
-                    ? '/V1/carts/mine/estimate-shipping-methods'
-                    : '/V1/guest-carts/' + this.cartId + '/estimate-shipping-methods';
-
-                this.estimatedShippingRatesLoading = true;
-                this.removeSelectedShippingMethod();
-                this.setAvailableShippingRates([]);
-                fetch(baseUrl + 'rest/' + CURRENT_STORE_CODE + path + '?form_key=' + hyva.getFormKey(), {
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        address: {
-                            country_id: this.getEstimationCountry(),
-                            region: this.getEstimationRegionName(),
-                            region_id: this.getEstimationRegionId() ? parseInt(this.getEstimationRegionId()) : null,
-                            postcode: this.getEstimationPostcode()
-                        }
-                    })
-                })
                     .then(response => response.json())
-                    .then(result => {
-                        this.initAvailableShippingRatesFromResult(result);
-                    })
-                    .catch(displayError)
-                    .finally(() => this.estimatedShippingRatesLoading = false);
-            },
-            initAvailableShippingRatesFromResult(result)
-            {
-                const toMoney = (amount) => {
-                    return {
-                        value: amount,
-                        currency: this.currentCurrency
-                    }
-                }
-                const estimatedShippingRates = result
-                    .filter(rate => rate.available)
-                    .map(rate => {
-                        rate.amount = toMoney(rate.amount);
-                        rate.price_excl_tax = toMoney(rate.price_excl_tax);
-                        rate.price_incl_tax = toMoney(rate.price_incl_tax);
-                        return rate;
-                    });
-                this.setAvailableShippingRates(estimatedShippingRates);
+                    .then(data => {
+                        this.clearErrorMessages();
+                        if (data && data.errors) {
+                            this.initErrorMessages(data.errors);
+                        } else {
+                            this.fetchTotalsEstimation();
+                            dispatchMessages([{
+                                type: 'info',
+                                text: data.message
+                            }], 5000);
 
-                if (estimatedShippingRates.length === 1) {
-                    this.selectShippingRate(estimatedShippingRates[0]);
-                } else if (this.cartData.is_virtual) {
+                            this.rewardsAmount = Number(data.usedPoints);
+                            if (this.rewardsAmount === 0) {
+                                document.getElementById('amreward_amount').value = ''
+                            }
+                        }
+                        this.reloadCustomerData();
+                    })
+                    .catch(displayError).finally(() => {
+                    this.stopLoading();
+                });
+            },
+            getCart() {
+                this.startLoading();
+                const query = (this.customerToken && this.getCustomerCartQuery()) || this.getCartQuery();
+                const variables = this.customerToken ? {} : {cartId: this.cartId}
+
+                fetch('<?= $escaper->escapeUrl($block->getBaseUrl()) ?>graphql', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Store': '<?= /* @noEscape */ $viewModelStore->getStoreCode() ?>'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({query: query, variables: variables})
+                    }
+                ).then((response) => {
+                        return response.json()
+                    }
+                ).then((data) => {
+                    if (data && data.errors) {
+                        this.initErrorMessages(data.errors);
+                    }
+
                     this.fetchTotalsEstimation();
-                }
-            },
-            getEstimatedShippingRateCarriers() {
-                return [...new Set(this.getAvailableShippingRates().map(rate => rate.carrier_title))];
-            },
-            getRatesForCarrier(carrierTitle) {
-                return [...this.getAvailableShippingRates().filter(rate => rate.carrier_title === carrierTitle)];
-            },
-            getUnavailableRatesForCarrier(carrierTitle) {
-                return [...this.getUnavailableShippingRates().filter(rate => rate.carrier_title === carrierTitle)];
-            },
-            selectShippingRate(rate) {
-                this.setSelectedShippingMethod(rate.carrier_code, rate.method_code, rate.price_excl_tax);
-                this.fetchTotalsEstimation();
+
+                    //
+                    setTimeout(() => { this.initRewards(); }, 500);
+
+                    this.cartData = (data && data.data && (data.data.customerCart || data.data.cart)) || {};
+                    this.updateCartDataDependencies();
+
+                }).catch(displayError).finally(() => {
+                    this.stopLoading();
+                });
             },
             fetchTotalsEstimation() {
                 this.cartData.prices = [];
