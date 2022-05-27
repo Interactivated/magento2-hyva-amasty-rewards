@@ -36,218 +36,230 @@ $storeConfigViewModel = $viewModels->require(StoreConfigViewModel::class);
 
 ?>
 <script>
-    const origInitCart = initCart;
+    (() => {
+        const originalInitCart = initCart;
+        window.initCart = function initCart() {
 
-    function initCart() {
-        return {...origInitCart(), ...{
-            showCouponForm: false,
-            showRewardsForm: false,
-            rewardsAmount: 0,
-            initRewards() {
-                this.rewardsAmount = Number(document.getElementById('amreward-hidden-amount').value) || 0;
-                if (this.rewardsAmount > 0) {
-                    document.getElementById('amreward_amount').value = this.rewardsAmount;
-                }
-            },
-            dispatchRewardsMutationRequest() {
-                if (document.getElementById('amreward_amount').value === '') {
-                    dispatchMessages([{
-                        type: 'error',
-                        text: '<?= $escaper->escapeJs(__('Please enter a reward amount!')) ?>'
-                    }], 5000)
-                } else {
-                    this.mutateRewards();
-                }
-            },
-            mutateRewards() {
-                this.startLoading();
+            const displayError = (error) => {
+                console.error(error);
+                typeof window.dispatchMessages !== "undefined" && window.dispatchMessages(
+                    [{
+                        type: "error",
+                        text: "<?= $escaper->escapeJs(__("Something went wrong. Please try again.")) ?>"
+                    }], 10000
+                );
+            };
 
-                const postUrl = document.getElementById('amrewards-form').action;
-                const amount = document.getElementById('amreward_amount').value;
-                const isRemove = document.getElementById('remove-rewards').value;
+            return Object.assign(originalInitCart(), {
+                showCouponForm: false,
+                showRewardsForm: false,
+                rewardsAmount: 0,
+                initRewards() {
+                    this.rewardsAmount = Number(document.getElementById('amreward-hidden-amount').value) || 0;
+                    if (this.rewardsAmount > 0) {
+                        document.getElementById('amreward_amount').value = this.rewardsAmount;
+                    }
+                },
+                dispatchRewardsMutationRequest() {
+                    if (document.getElementById('amreward_amount').value === '') {
+                        dispatchMessages([{
+                            type: 'error',
+                            text: '<?= $escaper->escapeJs(__('Please enter a reward amount!')) ?>'
+                        }], 5000)
+                    } else {
+                        this.mutateRewards();
+                    }
+                },
+                mutateRewards() {
+                    this.startLoading();
 
-                fetch(postUrl, {
-                    headers: {
-                        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                    },
-                    body: new URLSearchParams({
-                        'remove': isRemove,
-                        'amreward_amount': amount,
-                        form_key: hyva.getFormKey()
-                    }),
-                    method: "POST",
-                    mode: "cors",
-                    credentials: "include",
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        this.clearErrorMessages();
+                    const postUrl = document.getElementById('amrewards-form').action;
+                    const amount = document.getElementById('amreward_amount').value;
+                    const isRemove = document.getElementById('remove-rewards').value;
+
+                    fetch(postUrl, {
+                        headers: {
+                            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                        },
+                        body: new URLSearchParams({
+                            'remove': isRemove,
+                            'amreward_amount': amount,
+                            form_key: hyva.getFormKey()
+                        }),
+                        method: "POST",
+                        mode: "cors",
+                        credentials: "include",
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            this.clearErrorMessages();
+                            if (data && data.errors) {
+                                this.initErrorMessages(data.errors);
+                            } else {
+                                this.fetchTotalsEstimation();
+                                dispatchMessages([{
+                                    type: 'info',
+                                    text: data.message
+                                }], 5000);
+
+                                this.rewardsAmount = Number(data.usedPoints);
+                                if (this.rewardsAmount === 0) {
+                                    document.getElementById('amreward_amount').value = ''
+                                }
+                            }
+                            this.reloadCustomerData();
+                        })
+                        .catch(displayError).finally(() => {
+                        this.stopLoading();
+                    });
+                },
+                getCart() {
+                    this.startLoading();
+                    const query = (this.customerToken && this.getCustomerCartQuery()) || this.getCartQuery();
+                    const variables = this.customerToken ? {} : {cartId: this.cartId}
+
+                    fetch('<?= $escaper->escapeUrl($block->getBaseUrl()) ?>graphql', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Store': '<?= /* @noEscape */ $viewModelStore->getStoreCode() ?>'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({query: query, variables: variables})
+                        }
+                    ).then((response) => {
+                            return response.json()
+                        }
+                    ).then((data) => {
                         if (data && data.errors) {
                             this.initErrorMessages(data.errors);
-                        } else {
-                            this.fetchTotalsEstimation();
-                            dispatchMessages([{
-                                type: 'info',
-                                text: data.message
-                            }], 5000);
-
-                            this.rewardsAmount = Number(data.usedPoints);
-                            if (this.rewardsAmount === 0) {
-                                document.getElementById('amreward_amount').value = ''
-                            }
                         }
-                        this.reloadCustomerData();
-                    })
-                    .catch(displayError).finally(() => {
-                    this.stopLoading();
-                });
-            },
-            getCart() {
-                this.startLoading();
-                const query = (this.customerToken && this.getCustomerCartQuery()) || this.getCartQuery();
-                const variables = this.customerToken ? {} : {cartId: this.cartId}
 
-                fetch('<?= $escaper->escapeUrl($block->getBaseUrl()) ?>graphql', {
-                        method: 'POST',
+                        this.fetchTotalsEstimation();
+
+                        setTimeout(() => { this.initRewards(); }, 500);
+
+                        this.cartData = (data && data.data && (data.data.customerCart || data.data.cart)) || {};
+                        this.updateCartDataDependencies();
+
+                    }).catch(displayError).finally(() => {
+                        this.stopLoading();
+                    });
+                },
+                fetchTotalsEstimation() {
+                    this.cartData.prices = [];
+
+                    <?php /* ?>
+                    // Note 1: estimating the shipping rate via the REST totals-information endpoint does not save the quote
+                    // or the quote address. It only serves to fetch the updated totals.
+                    //
+                    // Note 2: At the time of writing, setting the shipping rate via GraphQL setShippingMethodsOnCart is
+                    // only possible with a complete shipping address, which is not known in the cart page. Because of this
+                    // we use the totals-information REST endpoint.
+                    //
+                    // Maybe we should determine where Luma persists the selected shipping method do the same for
+                    // compatibility with Luma based checkouts?
+                    // (Note 3: the shipping method is stored in localStorage['mage-cache-storage']['cart-data'], but that
+                    // value does not seem to be used by the checkout)
+                    */ ?>
+
+                    const baseUrl = '<?= $escaper->escapeUrl($block->getBaseUrl()) ?>'
+                    const path = this.customerToken
+                        ? '/V1/carts/mine/totals-information'
+                        : '/V1/guest-carts/' + this.cartId + '/totals-information';
+
+                    fetch(baseUrl + 'rest/' + CURRENT_STORE_CODE + path + '?form_key=' + hyva.getFormKey(), {
+                        method: 'post',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Store': '<?= /* @noEscape */ $viewModelStore->getStoreCode() ?>'
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
-                        credentials: 'include',
-                        body: JSON.stringify({query: query, variables: variables})
-                    }
-                ).then((response) => {
-                        return response.json()
-                    }
-                ).then((data) => {
-                    if (data && data.errors) {
-                        this.initErrorMessages(data.errors);
-                    }
-
-                    this.fetchTotalsEstimation();
-
-                    //
-                    setTimeout(() => { this.initRewards(); }, 500);
-
-                    this.cartData = (data && data.data && (data.data.customerCart || data.data.cart)) || {};
-                    this.updateCartDataDependencies();
-
-                }).catch(displayError).finally(() => {
-                    this.stopLoading();
-                });
-            },
-            fetchTotalsEstimation() {
-                this.cartData.prices = [];
-
-                <?php /* ?>
-                // Note 1: estimating the shipping rate via the REST totals-information endpoint does not save the quote
-                // or the quote address. It only serves to fetch the updated totals.
-                //
-                // Note 2: At the time of writing, setting the shipping rate via GraphQL setShippingMethodsOnCart is
-                // only possible with a complete shipping address, which is not known in the cart page. Because of this
-                // we use the totals-information REST endpoint.
-                //
-                // Maybe we should determine where Luma persists the selected shipping method do the same for
-                // compatibility with Luma based checkouts?
-                // (Note 3: the shipping method is stored in localStorage['mage-cache-storage']['cart-data'], but that
-                // value does not seem to be used by the checkout)
-                */ ?>
-
-                const baseUrl = '<?= $escaper->escapeUrl($block->getBaseUrl()) ?>'
-                const path = this.customerToken
-                    ? '/V1/carts/mine/totals-information'
-                    : '/V1/guest-carts/' + this.cartId + '/totals-information';
-
-                fetch(baseUrl + 'rest/' + CURRENT_STORE_CODE + path + '?form_key=' + hyva.getFormKey(), {
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        addressInformation: {
-                            shipping_carrier_code: this.getSelectedShippingMethod().carrier_code,
-                            shipping_method_code: this.getSelectedShippingMethod().method_code,
-                            address: {
-                                countryId: this.getEstimationCountry(),
-                                postcode: this.getEstimationPostcode(),
-                                region: this.getEstimationRegionName(),
-                                regionId: this.getEstimationRegionId()
-                            }
-                        }
-                    })
-                })
-                    .then(response => response.json())
-                    .then(result => {
-                        /*
-                        The tax information in the REST totals-information response does not map cleanly to the
-                        structure of the GraphQL cart.prices.applied_taxes structure.
-                        The following code attempts to find a matching label for the tax rate.
-                         */
-                        const findTotalByCode = code => result.total_segments.filter(tax => tax.code === code)[0] || {};
-
-                        const taxTotal = findTotalByCode('tax');
-                        const grandTotalTaxDetails = taxTotal.value &&
-                            taxTotal.extension_attributes &&
-                            taxTotal.extension_attributes.tax_grandtotal_details || [];
-
-                        const appliedTaxes = grandTotalTaxDetails.map(tax => {
-                            return {
-                                amount: {currency: this.currentCurrency, value: tax.amount},
-                                label: tax.rates[0].title || '<?= $escaper->escapeJs(__('Tax')) ?>',
+                        body: JSON.stringify({
+                            addressInformation: {
+                                shipping_carrier_code: this.getSelectedShippingMethod().carrier_code,
+                                shipping_method_code: this.getSelectedShippingMethod().method_code,
+                                address: {
+                                    countryId: this.getEstimationCountry(),
+                                    postcode: this.getEstimationPostcode(),
+                                    region: this.getEstimationRegionName(),
+                                    regionId: this.getEstimationRegionId()
+                                }
                             }
                         })
-
-                        let discounts = [];
-                        if (result.coupon_code) {
-                            this.cartData.applied_coupons = [{code: result.coupon_code}]
-                            discounts.push({
-                                label: result.coupon_code,
-                                amount: {
-                                    value: Math.abs(result.discount_amount)
-                                }
-                            });
-                        }
-
-                        let rewardsDiscount = null;
-                        if (rewardsDiscount = result.total_segments.find(item => item.code === 'discount')) {
-                            discounts.push({
-                                label: rewardsDiscount.title,
-                                amount: {
-                                    value: Math.abs(rewardsDiscount.value)
-                                }
-                            });
-                        }
-
-                        this.cartData.prices = {
-                            applied_taxes: appliedTaxes,
-                            discounts: discounts,
-                            grand_total: {
-                                currency: result.quote_currency_code,
-                                value: findTotalByCode('grand_total').value || result.grand_total
-                            },
-                            subtotal_excluding_tax: {
-                                currency: result.quote_currency_code,
-                                value: findTotalByCode('subtotal').value || result.subtotal
-                            },
-                            subtotal_including_tax: {
-                                currency: result.quote_currency_code,
-                                value: result.subtotal_incl_tax
-                            },
-                            subtotal_with_discount_excluding_tax: {
-                                currency: result.quote_currency_code,
-                                value: result.subtotal_with_discount
-                            }
-                        };
-                        this.getSelectedShippingMethod().amount = {
-                            currency: result.quote_currency_code,
-                            value: findTotalByCode('shipping').value || result.shipping_amount
-                        }
-
-                        // not handled currently: fixed product taxes (weee)
                     })
-                    .catch(displayError);
-            }
+                        .then(response => response.json())
+                        .then(result => {
+                            /*
+                            The tax information in the REST totals-information response does not map cleanly to the
+                            structure of the GraphQL cart.prices.applied_taxes structure.
+                            The following code attempts to find a matching label for the tax rate.
+                             */
+                            const findTotalByCode = code => result.total_segments.filter(tax => tax.code === code)[0] || {};
+
+                            const taxTotal = findTotalByCode('tax');
+                            const grandTotalTaxDetails = taxTotal.value &&
+                                taxTotal.extension_attributes &&
+                                taxTotal.extension_attributes.tax_grandtotal_details || [];
+
+                            const appliedTaxes = grandTotalTaxDetails.map(tax => {
+                                return {
+                                    amount: {currency: this.currentCurrency, value: tax.amount},
+                                    label: tax.rates[0].title || '<?= $escaper->escapeJs(__('Tax')) ?>',
+                                }
+                            })
+
+                            let discounts = [];
+                            if (result.coupon_code) {
+                                this.cartData.applied_coupons = [{code: result.coupon_code}]
+                                discounts.push({
+                                    label: result.coupon_code,
+                                    amount: {
+                                        value: Math.abs(result.discount_amount)
+                                    }
+                                });
+                            }
+
+                            let rewardsDiscount = null;
+                            if (rewardsDiscount = result.total_segments.find(item => item.code === 'discount')) {
+                                discounts.push({
+                                    label: rewardsDiscount.title,
+                                    amount: {
+                                        value: Math.abs(rewardsDiscount.value)
+                                    }
+                                });
+                            }
+
+                            this.cartData.prices = {
+                                applied_taxes: appliedTaxes,
+                                discounts: discounts,
+                                grand_total: {
+                                    currency: result.quote_currency_code,
+                                    value: findTotalByCode('grand_total').value || result.grand_total
+                                },
+                                subtotal_excluding_tax: {
+                                    currency: result.quote_currency_code,
+                                    value: findTotalByCode('subtotal').value || result.subtotal
+                                },
+                                subtotal_including_tax: {
+                                    currency: result.quote_currency_code,
+                                    value: result.subtotal_incl_tax
+                                },
+                                subtotal_with_discount_excluding_tax: {
+                                    currency: result.quote_currency_code,
+                                    value: result.subtotal_with_discount
+                                }
+                            };
+                            this.getSelectedShippingMethod().amount = {
+                                currency: result.quote_currency_code,
+                                value: findTotalByCode('shipping').value || result.shipping_amount
+                            }
+
+                            // not handled currently: fixed product taxes (weee)
+                        })
+                        .catch(displayError);
+                }
+
+            });
         }
-    }
+    })()
 </script>
