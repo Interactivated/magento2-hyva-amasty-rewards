@@ -5,10 +5,8 @@
     <body>
         <move element="checkout.cart.amreward" destination="additional.cart.information" />
 
-        <referenceBlock name="cart_main_js">
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Hyva_AmastyRewards::cart/js/cart.phtml</argument>
-            </action>
+        <referenceBlock name="cart_dynamic">
+            <block name="cart_main_js_extra" template="Hyva_AmastyRewards::cart/js/cart.phtml" />
         </referenceBlock>
 
         <referenceBlock name="totals">
