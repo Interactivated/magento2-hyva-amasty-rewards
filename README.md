@@ -4,15 +4,21 @@
 ## Compatibility features
 
 1. Displaying a potencial rewards on category pages
-<img width="1577" alt="potencial rewards" src="https://user-images.githubusercontent.com/414067/177096692-9cffb5a6-5443-4a17-874b-26d3f77aca34.png">
+<img width="1577" alt="" src="https://user-images.githubusercontent.com/414067/177096692-9cffb5a6-5443-4a17-874b-26d3f77aca34.png">
 
 2. Showing logged-in customers their reward points balance
-<img width="1048" alt="balance" src="https://user-images.githubusercontent.com/414067/177097886-23159cfa-6ed8-419b-b30e-d2ce9c5856b3.png">
+<img width="1048" alt="" src="https://user-images.githubusercontent.com/414067/177097886-23159cfa-6ed8-419b-b30e-d2ce9c5856b3.png">
 
 3. Displaying a potencial earn points after buy product
 <img width="1563" alt="" src="https://user-images.githubusercontent.com/414067/177098197-972ba907-ae91-4320-bf1a-5600141b22ac.png">
 
-4. 
+4. Showing a potencial earn points on the cart page
+<img width="1581" alt="" src="https://user-images.githubusercontent.com/414067/177098840-582833cc-3267-4ff0-81a7-58c3a7c68b8d.png">
+
+5. Redeem their reward points partially. Apply/Cancel controls.
+<img width="1575" alt="" src="https://user-images.githubusercontent.com/414067/177099582-02e06d8f-78cd-476d-b3cb-37a60b4abe14.png">
+
+<img width="1584" alt="" src="https://user-images.githubusercontent.com/414067/177099598-ca2cdd48-83b0-49a1-b996-7bb4bde002eb.png">
 
  
 ## Installation
