@@ -1,6 +1,13 @@
 
-# magento2-amasty-rewards
-Hyvä Themes Compatibility module for Amasty_Rewards
+# Hyvä Themes Compatibility module for Amasty_Rewards
+
+## Compatibility features
+
+1. Displaying a potencial rewards on category pages
+<img width="1577" alt="potencial rewards" src="https://user-images.githubusercontent.com/414067/177096692-9cffb5a6-5443-4a17-874b-26d3f77aca34.png">
+
+2. 
+
  
 ## Installation
   
