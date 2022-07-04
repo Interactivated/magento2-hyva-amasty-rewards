@@ -6,7 +6,13 @@
 1. Displaying a potencial rewards on category pages
 <img width="1577" alt="potencial rewards" src="https://user-images.githubusercontent.com/414067/177096692-9cffb5a6-5443-4a17-874b-26d3f77aca34.png">
 
-2. 
+2. Showing logged-in customers their reward points balance
+<img width="1048" alt="balance" src="https://user-images.githubusercontent.com/414067/177097886-23159cfa-6ed8-419b-b30e-d2ce9c5856b3.png">
+
+3. Displaying a potencial earn points after buy product
+<img width="1563" alt="" src="https://user-images.githubusercontent.com/414067/177098197-972ba907-ae91-4320-bf1a-5600141b22ac.png">
+
+4. 
 
  
 ## Installation
